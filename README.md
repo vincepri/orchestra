@@ -29,4 +29,13 @@ In a service oriented architecture, an existing challenge is to manage running b
 - The application will create a `.orchestra` folder in the directory (gopath) that we want to orchestrate. The purpose of this directoy is to provide the necessary context when running orchestra again.
 - The application can be run in every folder inside the `GOPATH`, e.g. let's assume that we have a single repo (called `myservices`) with all the services in different folders, you can run orchestra inside that folder and it will recursively (with `depth=1`) look in every directory for a configuration file (i.e. `service.yml`) and register the services. This approach works seamlessly with services split in multiple repositories in one GitHub account.
 - Logging is extremely important, and with great logging comes great responsibilities. For simplicity we'll redirect the output of a service into a file, then we use `github.com/ActiveState/tail` library to aggregate the logs of different services, maybe make them colorful and prefix them with the service name.
-- Rerun 
+- Code reload of Go binaries can be achieved using `github.com/skelterjohn/rerun`. It relies on `fsnotify` and it watches for changes in the Go files. It can be possible, before every run, to run the tests again using `go test`. I am considering of forking the project for the sake of better logging.
+
+
+
+
+
+
+
+
+
