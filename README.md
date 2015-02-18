@@ -13,3 +13,15 @@ In a service oriented architecture, an existing challenge is to manage running b
 - **Logging**: Show aggregated logs for every service in the fleet.
 - **Reliability**: Services started with Orchestra should operate atomically and in a reliable way. When Orchestra starts a service should check for the running processes, and match and kill services running outside this toolkit (e.g. running `go run main.go` inside a service folder or the `./service` binary)
 - **Scale**: Services should be able to scale, by default the scale level is set to 1. A scale value can be set for every service inside their configuration file.
+
+## Command Line Cmd/Flags Proposal
+- `start`
+    - *noreload*: doesn't use rerun
+    - *scale*: overwrites the defined scale parameter
+- `stop`
+- `restart`
+- `vendors`
+
+## Design Proposal
+- The application will create a `.orchestra` folder in the directory (gopath) that we want to orchestrate. The purpose of this directoy is to provide the necessary context when running orchestra again.
+- The application can be run in every folder inside the `GOPATH`, e.g. let's assume that we have a single repo (called `myservices`) with all the services in different folders, you can run orchestra inside that folder and it will recursively (with `depth=1`) look in every directory for a configuration file (i.e. `service.yml`) and register the services. This approach works seamlessly with services split in multiple repositories in one GitHub account.
