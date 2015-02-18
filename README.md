@@ -21,6 +21,7 @@ In a service oriented architecture, an existing challenge is to manage running b
 - `stop`
 - `restart`
 - `vendors`
+- `logs`
 
 ## Design Proposal
 - The application will create a `.orchestra` folder in the directory (gopath) that we want to orchestrate. The purpose of this directoy is to provide the necessary context when running orchestra again.
