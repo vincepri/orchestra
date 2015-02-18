@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/commands"
 )
 
 var app *cli.App
@@ -13,8 +14,8 @@ func main() {
 	app.Name = "Orchestra"
 	app.Usage = "Orchestrate Go Services"
 	app.Commands = []cli.Command{
-		*StartCommand,
-		*StopCommand,
+		*commands.StartCommand,
+		*commands.StopCommand,
 	}
 	app.Version = "0.1"
 	app.Run(os.Args)
