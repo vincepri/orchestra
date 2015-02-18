@@ -1,5 +1,6 @@
 # Orchestra
-Orchestra is a toolkit to manage a fleet of Go binaries/services. 
+[![wercker status](https://app.wercker.com/status/16ba07e3d295feb5c3874207a9f3fe36/s "wercker status")](https://app.wercker.com/project/bykey/16ba07e3d295feb5c3874207a9f3fe36)
+Orchestra is a toolkit to manage a fleet of Go binaries/services.
 
 ![](https://cloud.githubusercontent.com/assets/3118335/6255612/4811c940-b7a9-11e4-8d06-966981de3926.png)
 
@@ -10,7 +11,7 @@ In a service oriented architecture, an existing challenge is to manage running b
 - **Standalone**: The first requirement is to provide support as a standalone tool, without external dependencies (apart from *docker* when using vendors). An optional flag will be provided to run the Go binaries inside a docker container.
 - **Rerun**: Reload (build, test and run) services upon modification
 - **Vendors**: Specify dependecies with existing services. Vendor software (e.g. postgres, rabbitmq, etc) will run inside Docker. This feature relies on `crane`.
-- **Configuration**: A global configuration file will be required to specify `ENV` variables for every service. An optional configuration file can be specified 
+- **Configuration**: A global configuration file will be required to specify `ENV` variables for every service. An optional configuration file can be specified
 - **Testing**: Run unit tests and acceptance tests.
 - **Logging**: Show aggregated logs for every service in the fleet.
 - **Reliability**: Services started with Orchestra should operate atomically and in a reliable way. When Orchestra starts a service should check for the running processes, and match and kill services running outside this toolkit (e.g. running `go run main.go` inside a service folder or the `./service` binary)
