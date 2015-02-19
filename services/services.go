@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"os/exec"
+	"strconv"
 	"strings"
+	"syscall"
 
 	"go/build"
 
@@ -25,9 +26,9 @@ type Service struct {
 	Path          string
 	OrchestraPath string
 	LogFilePath   string
+	PidFilePath   string
 	FileInfo      os.FileInfo
 	PackageInfo   *build.Package
-	Cmd           *exec.Cmd
 	Process       *os.Process
 }
 
@@ -51,7 +52,6 @@ func DiscoverServices() {
 	for _, item := range fd {
 		if item.IsDir() && !strings.HasPrefix(item.Name(), ".") {
 			if _, err := os.Stat(fmt.Sprintf("%s/%s/service.yml", ProjectPath, item.Name())); err == nil {
-
 				// Check for service.yml and try to import the package
 				pkg, err := build.Import(fmt.Sprintf("%s/%s", buildPath, item.Name()), "srcDir", 0)
 				if err != nil {
@@ -60,14 +60,32 @@ func DiscoverServices() {
 					continue
 				}
 
-				// Add the service to the registry
-				Registry[item.Name()] = &Service{
+				service := &Service{
 					Name:          item.Name(),
 					Description:   "",
 					FileInfo:      item,
 					PackageInfo:   pkg,
 					OrchestraPath: OrchestraServicePath,
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
+					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
+				}
+
+				// Add the service to the registry
+				Registry[item.Name()] = service
+				if _, err := os.Stat(service.PidFilePath); err == nil {
+					bytes, _ := ioutil.ReadFile(service.PidFilePath)
+					pid, _ := strconv.Atoi(string(bytes))
+					proc, procErr := os.FindProcess(pid)
+					if procErr == nil {
+						sigError := proc.Signal(syscall.Signal(0))
+						if sigError == nil {
+							service.Process = proc
+						} else {
+							os.Remove(service.PidFilePath)
+						}
+					} else {
+						os.Remove(service.PidFilePath)
+					}
 				}
 			}
 		}

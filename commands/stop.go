@@ -1,6 +1,12 @@
 package commands
 
-import "github.com/codegangsta/cli"
+import (
+	"os"
+
+	"github.com/cihub/seelog"
+	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/services"
+)
 
 var StopCommand = &cli.Command{
 	Name:   "stop",
@@ -9,5 +15,16 @@ var StopCommand = &cli.Command{
 }
 
 func StopAction(c *cli.Context) {
-
+	for name, service := range services.Registry {
+		if service.Process != nil {
+			err := service.Process.Kill()
+			if err != nil {
+				seelog.Error(err.Error())
+				continue
+			} else {
+				defer os.Remove(service.PidFilePath)
+			}
+			seelog.Infof("Stopped %s", name)
+		}
+	}
 }
