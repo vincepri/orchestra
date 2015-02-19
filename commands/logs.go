@@ -38,7 +38,6 @@ func LogsAction(c *cli.Context) {
 }
 
 func ConsumeLogs(done chan bool) {
-	log.Info("Started consuming logs")
 	for log := range logReceiver {
 		fmt.Println(log)
 	}
@@ -46,12 +45,12 @@ func ConsumeLogs(done chan bool) {
 }
 
 func TailServiceLog(service *services.Service) {
-	spacing := maxServiceNameLength + 2 - len(service.Name)
+	spacingLength := maxServiceNameLength + 2 - len(service.Name)
 	t, err := tail.TailFile(service.LogFilePath, tail.Config{Follow: true})
 	if err != nil {
 		log.Error(err.Error())
 	}
 	for line := range t.Lines {
-		logReceiver <- fmt.Sprintf("[%s]%s|  %s", service.Name, strings.Repeat(" ", spacing), line.Text)
+		logReceiver <- fmt.Sprintf("%s%s|  %s", service.Name, strings.Repeat(" ", spacingLength), line.Text)
 	}
 }

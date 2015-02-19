@@ -53,7 +53,6 @@ func DiscoverServices() {
 			if _, err := os.Stat(fmt.Sprintf("%s/%s/service.yml", ProjectPath, item.Name())); err == nil {
 
 				// Check for service.yml and try to import the package
-				log.Infof("Found service.yml in %s ", item.Name())
 				pkg, err := build.Import(fmt.Sprintf("%s/%s", buildPath, item.Name()), "srcDir", 0)
 				if err != nil {
 					log.Errorf("Error registering %s", item.Name())
