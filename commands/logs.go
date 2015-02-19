@@ -17,7 +17,6 @@ var LogsCommand = &cli.Command{
 }
 
 var logReceiver chan string
-var maxServiceNameLength int
 
 func init() {
 	logReceiver = make(chan string)
@@ -25,11 +24,6 @@ func init() {
 
 func LogsAction(c *cli.Context) {
 	done := make(chan bool)
-	for name := range services.Registry {
-		if len(name) > maxServiceNameLength {
-			maxServiceNameLength = len(name)
-		}
-	}
 	go ConsumeLogs(done)
 	for _, service := range services.Registry {
 		go TailServiceLog(service)
@@ -45,7 +39,7 @@ func ConsumeLogs(done chan bool) {
 }
 
 func TailServiceLog(service *services.Service) {
-	spacingLength := maxServiceNameLength + 2 - len(service.Name)
+	spacingLength := services.MaxServiceNameLength + 2 - len(service.Name)
 	t, err := tail.TailFile(service.LogFilePath, tail.Config{Follow: true})
 	if err != nil {
 		log.Error(err.Error())

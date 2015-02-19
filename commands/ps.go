@@ -1,9 +1,11 @@
 package commands
 
 import (
-	"github.com/cihub/seelog"
+	"strings"
+
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
+	"github.com/wsxiaoys/terminal"
 )
 
 var PsCommand = &cli.Command{
@@ -14,10 +16,11 @@ var PsCommand = &cli.Command{
 
 func PsAction(c *cli.Context) {
 	for name, service := range services.Registry {
+		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process != nil {
-			seelog.Infof("Service %s is RUNNING", name)
+			terminal.Stdout.Colorf("@{g}%s", name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d\n", service.Process.Pid)
 		} else {
-			seelog.Infof("Service %s is not running", name)
+			terminal.Stdout.Colorf("@{r}%s", name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
 		}
 	}
 }

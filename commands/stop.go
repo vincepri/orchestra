@@ -15,16 +15,19 @@ var StopCommand = &cli.Command{
 }
 
 func StopAction(c *cli.Context) {
-	for name, service := range services.Registry {
-		if service.Process != nil {
-			err := service.Process.Kill()
-			if err != nil {
-				seelog.Error(err.Error())
-				continue
-			} else {
-				defer os.Remove(service.PidFilePath)
-			}
-			seelog.Infof("Stopped %s", name)
+	for _, service := range services.Registry {
+		killService(service)
+	}
+}
+
+func killService(service *services.Service) {
+	if service.Process != nil {
+		err := service.Process.Kill()
+		defer os.Remove(service.PidFilePath)
+		if err != nil {
+			seelog.Error(err.Error())
+			return
 		}
+		seelog.Infof("Stopped %s", service.Name)
 	}
 }

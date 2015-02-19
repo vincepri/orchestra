@@ -19,6 +19,7 @@ import (
 var OrchestraServicePath string
 var ProjectPath string
 var Registry map[string]*Service
+var MaxServiceNameLength int
 
 type Service struct {
 	Name          string
@@ -68,6 +69,11 @@ func DiscoverServices() {
 					OrchestraPath: OrchestraServicePath,
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
+				}
+
+				// Because I like nice logging
+				if len(service.Name) > MaxServiceNameLength {
+					MaxServiceNameLength = len(service.Name)
 				}
 
 				// Add the service to the registry
