@@ -19,7 +19,7 @@ var StartCommand = &cli.Command{
 }
 
 func StartAction(c *cli.Context) {
-	for _, service := range services.Registry {
+	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		err := startService(service)
 		if err != nil {

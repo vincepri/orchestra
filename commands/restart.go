@@ -16,7 +16,7 @@ var RestartCommand = &cli.Command{
 }
 
 func RestartAction(c *cli.Context) {
-	for _, service := range services.Registry {
+	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 
 		err := killService(service)
@@ -29,6 +29,7 @@ func RestartAction(c *cli.Context) {
 			log.Error(err.Error())
 			continue
 		}
+
 		terminal.Stdout.Colorf("%s%s| @{c} restarted\n", service.Name, spacing)
 	}
 }

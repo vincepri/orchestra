@@ -17,7 +17,7 @@ var StopCommand = &cli.Command{
 }
 
 func StopAction(c *cli.Context) {
-	for _, service := range services.Registry {
+	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		err := killService(service)
 		if err != nil {

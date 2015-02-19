@@ -26,7 +26,7 @@ func init() {
 func LogsAction(c *cli.Context) {
 	done := make(chan bool)
 	go ConsumeLogs(done)
-	for _, service := range services.Registry {
+	for _, service := range FilterServices(c) {
 		go TailServiceLog(service)
 	}
 	<-done
