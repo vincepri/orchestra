@@ -32,7 +32,9 @@ In a service oriented architecture, an existing challenge is to manage running b
 - Logging is extremely important, and with great logging comes great responsibilities. For simplicity we'll redirect the output of a service into a file, then we use `github.com/ActiveState/tail` library to aggregate the logs of different services, maybe make them colorful and prefix them with the service name.
 - Code reload of Go binaries can be achieved using `github.com/skelterjohn/rerun`. It relies on `fsnotify` and it watches for changes in the Go files. It can be possible, before every run, to run the tests again using `go test`. I am considering of forking the project for the sake of better logging.
 - The application is a pure command-line toolkit, for this reason we may need commands, maybe subcommands and flags. For simplicity I intend to use the well known `github.com/codegangsta/cli` library.
-
+- `YAML` will be used as the standard format to store configuration files. In Go, a YAML parser is required, `github.com/go-yaml/yaml` is my favorite option at the moment to marshal or unmarshal files.
+- An initialization process may be used to initialize a folder as an orchestra project. This may be a useful step to do some checks before start looking into all subdirectories and start running the binaries.
+- _Under consideration_: It may be useful to store in the home directory all the projects registered with orchestra, have a list of them available and change project 
 
 
 
