@@ -8,6 +8,7 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
+	"github.com/wsxiaoys/terminal"
 )
 
 var LogsCommand = &cli.Command{
@@ -33,7 +34,7 @@ func LogsAction(c *cli.Context) {
 
 func ConsumeLogs(done chan bool) {
 	for log := range logReceiver {
-		fmt.Println(log)
+		terminal.Stdout.Colorf(log)
 	}
 	done <- true
 }
@@ -45,6 +46,6 @@ func TailServiceLog(service *services.Service) {
 		log.Error(err.Error())
 	}
 	for line := range t.Lines {
-		logReceiver <- fmt.Sprintf("%s%s|  %s", service.Name, strings.Repeat(" ", spacingLength), line.Text)
+		logReceiver <- fmt.Sprintf("@{%s}%s@{|}%s|  %s\n", service.Color, service.Name, strings.Repeat(" ", spacingLength), line.Text)
 	}
 }

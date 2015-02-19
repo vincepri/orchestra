@@ -17,6 +17,7 @@ var OrchestraServicePath string
 var ProjectPath string
 var Registry map[string]*Service
 var MaxServiceNameLength int
+var colors = []string{"g", "b", "c", "m", "y", "w"}
 
 type Service struct {
 	Name          string
@@ -28,6 +29,7 @@ type Service struct {
 	FileInfo      os.FileInfo
 	PackageInfo   *build.Package
 	Process       *os.Process
+	Color         string
 }
 
 func init() {
@@ -66,6 +68,7 @@ func DiscoverServices() {
 					OrchestraPath: OrchestraServicePath,
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
+					Color:         colors[len(Registry)%len(colors)],
 				}
 
 				// Because I like nice logging
