@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 
@@ -19,7 +18,7 @@ var StartCommand = &cli.Command{
 func StartAction(c *cli.Context) {
 	for name, service := range services.Registry {
 		cmd := exec.Command(name)
-		outputFile, err := os.Create(fmt.Sprintf("%s/%s.log", service.OrchestraPath, name))
+		outputFile, err := os.Create(service.LogFilePath)
 		if err != nil && os.IsNotExist(err) {
 			log.Error(err)
 			continue

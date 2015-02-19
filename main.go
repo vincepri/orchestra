@@ -37,6 +37,8 @@ func main() {
 	app.Commands = []cli.Command{
 		*commands.StartCommand,
 		*commands.StopCommand,
+		*commands.LogsCommand,
+		*commands.RestartCommand,
 	}
 	app.Version = "0.1"
 	app.Run(os.Args)

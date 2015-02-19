@@ -24,6 +24,7 @@ type Service struct {
 	Description   string
 	Path          string
 	OrchestraPath string
+	LogFilePath   string
 	FileInfo      os.FileInfo
 	PackageInfo   *build.Package
 	Cmd           *exec.Cmd
@@ -67,6 +68,7 @@ func DiscoverServices() {
 					FileInfo:      item,
 					PackageInfo:   pkg,
 					OrchestraPath: OrchestraServicePath,
+					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
 				}
 			}
 		}
