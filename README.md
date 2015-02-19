@@ -18,6 +18,7 @@ In a service oriented architecture, an existing challenge is to manage running b
 - **Scale**: Services should be able to scale, by default the scale level is set to 1. A scale value can be set for every service inside their configuration file.
 
 ## Command Line Cmd/Flags Proposal
+- `init` (under connsideration)
 - `start`
     - *noreload*: doesn't use rerun
     - *scale*: overwrites the defined scale parameter
