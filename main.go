@@ -13,6 +13,8 @@ func main() {
 	app = cli.NewApp()
 	app.Name = "Orchestra"
 	app.Usage = "Orchestrate Go Services"
+	app.Author = "Vincenzo Prignano"
+	app.Email = ""
 	app.Commands = []cli.Command{
 		*commands.StartCommand,
 		*commands.StopCommand,
