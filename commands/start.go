@@ -38,6 +38,7 @@ func startService(service *services.Service) {
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
+	cmd.Env = services.OrchestraConfig.Environment
 	if err := cmd.Start(); err != nil {
 		log.Error(err.Error())
 		return

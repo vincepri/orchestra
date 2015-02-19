@@ -28,6 +28,7 @@ func init() {
 
 func main() {
 	defer log.Flush()
+	services.ParseGlobalConfig()
 	services.Init()
 	app = cli.NewApp()
 	app.Name = "Orchestra"

@@ -13,9 +13,6 @@ import (
 	log "github.com/cihub/seelog"
 )
 
-// Init is in charge of initializing an orchestra project
-// from the current folder and save relevant information in "~/.orchestra/service"
-// making sure that the service directory inside orchestra is available
 var OrchestraServicePath string
 var ProjectPath string
 var Registry map[string]*Service
