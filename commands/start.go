@@ -4,10 +4,12 @@ import (
 	"os"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
+	"github.com/wsxiaoys/terminal"
 )
 
 var StartCommand = &cli.Command{
@@ -18,31 +20,34 @@ var StartCommand = &cli.Command{
 
 func StartAction(c *cli.Context) {
 	for _, service := range services.Registry {
-		startService(service)
+		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
+		err := startService(service)
+		if err != nil {
+			log.Error(err)
+		} else {
+			terminal.Stdout.Colorf("%s%s| @{g} started\n", service.Name, spacing)
+		}
 	}
 }
 
-func startService(service *services.Service) {
+func startService(service *services.Service) error {
 	cmd := exec.Command(service.Name)
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
-		log.Error(err)
-		return
+		return err
 	}
 	defer outputFile.Close()
 	pidFile, err := os.Create(service.PidFilePath)
 	if err != nil && os.IsNotExist(err) {
-		log.Error(err)
-		return
+		return err
 	}
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
 	cmd.Env = services.OrchestraConfig.Environment
 	if err := cmd.Start(); err != nil {
-		log.Error(err.Error())
-		return
+		return err
 	}
 	pidFile.WriteString(strconv.Itoa(cmd.Process.Pid))
-	log.Infof("Started %s", service.Name)
+	return nil
 }

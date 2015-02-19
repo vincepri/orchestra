@@ -23,13 +23,13 @@ type Service struct {
 	Name          string
 	Description   string
 	Path          string
+	Color         string
 	OrchestraPath string
 	LogFilePath   string
 	PidFilePath   string
 	FileInfo      os.FileInfo
 	PackageInfo   *build.Package
 	Process       *os.Process
-	Color         string
 }
 
 func init() {
