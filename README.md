@@ -5,7 +5,7 @@ Orchestra is a toolkit to manage a fleet of Go binaries/services.
 ![](https://cloud.githubusercontent.com/assets/3118335/6255612/4811c940-b7a9-11e4-8d06-966981de3926.png)
 
 ## Use Case
-In a service oriented architecture, an existing challenge is to manage running binaries, dependencies and networking. **Orchestra** goal is to provide a unique place where you can *run*, *stop*, *aggregate logs* and *config* your Go binaries.
+In a service oriented architecture, an existing challenge is to manage running binaries, dependencies and networking. **Orchestra**'s goal is to provide a unique place where you can *run*, *stop*, *aggregate logs* and *config* your Go binaries.
 
 ## Goals
 - **Standalone**: The first requirement is to provide support as a standalone tool, without external dependencies (apart from *docker* when using vendors). An optional flag will be provided to run the Go binaries inside a docker container.
