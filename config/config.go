@@ -46,6 +46,7 @@ func runCommands(cmds []string) {
 		if err != nil {
 			seelog.Error(err.Error())
 		}
+		cmd.Wait()
 	}
 }
 
