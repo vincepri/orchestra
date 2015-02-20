@@ -21,6 +21,9 @@ var TestCommand = &cli.Command{
 		cli.BoolFlag{
 			Name: "verbose, v",
 		},
+		cli.BoolFlag{
+			Name: "race, r",
+		},
 	},
 }
 
@@ -46,12 +49,15 @@ func TestAction(c *cli.Context) {
 // variables for the command and starts it. If cmd.Start() doesn't return any
 // error, it will write a service.pid file in .orchestra
 func testService(c *cli.Context, service *services.Service) (bool, error) {
-	var cmd *exec.Cmd
+	cmdArgs := []string{"test"}
 	if c.Bool("verbose") {
-		cmd = exec.Command("go", "test", "-v", "./...")
-	} else {
-		cmd = exec.Command("go", "test", "./...")
+		cmdArgs = append(cmdArgs, "-v")
 	}
+	if c.Bool("race") {
+		cmdArgs = append(cmdArgs, "--race")
+	}
+	cmdArgs = append(cmdArgs, "./...")
+	cmd := exec.Command("go", cmdArgs...)
 	cmd.Dir = service.Path
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
