@@ -28,6 +28,7 @@ func StartAction(c *cli.Context) {
 		if service.Process == nil {
 			err := startService(c, service)
 			if err != nil {
+				appendError(err)
 				terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			} else {
 				terminal.Stdout.Colorf("%s%s| @{g} started\n", service.Name, spacing)

@@ -51,12 +51,6 @@ func init() {
 // Init initializes the OrchestraServicePath to the workingdir/.orchestra path
 // and starts the service discovery
 func Init() {
-	ProjectPath, _ = os.Getwd()
-	OrchestraServicePath = fmt.Sprintf("%s/.orchestra", ProjectPath)
-	if err := os.Mkdir(OrchestraServicePath, 0766); err != nil && os.IsNotExist(err) {
-		log.Critical(err.Error())
-		os.Exit(1)
-	}
 	DiscoverServices()
 }
 

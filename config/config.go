@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -14,6 +15,7 @@ import (
 )
 
 var orchestra *Config
+var ConfigPath string
 
 type ContextConfig struct {
 	Env    []string `env,omitempty`
@@ -38,7 +40,7 @@ type Config struct {
 
 func ParseGlobalConfig() {
 	orchestra = &Config{}
-	b, err := ioutil.ReadFile(services.ProjectPath + "orchestra.yml")
+	b, err := ioutil.ReadFile(ConfigPath)
 	if err != nil {
 		seelog.Criticalf(err.Error())
 		os.Exit(1)
@@ -53,7 +55,7 @@ func GetEnvForService(c *cli.Context, service *services.Service) []string {
 	return append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...) // TODO: Add the env from service.yml
 }
 
-func runCommands(c *cli.Context, cmds []string) {
+func runCommands(c *cli.Context, cmds []string) error {
 	for _, command := range cmds {
 		cmdLine := strings.Split(command, " ")
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
@@ -62,23 +64,41 @@ func runCommands(c *cli.Context, cmds []string) {
 		cmd.Env = append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
 		err := cmd.Start()
 		if err != nil {
-			seelog.Error(err.Error())
+			return err
 		}
 		cmd.Wait()
+		if !cmd.ProcessState.Success() {
+			return fmt.Errorf("Command %s exited with error", cmdLine[0])
+		}
+	}
+	return nil
+}
+
+func GetBeforeFunc() func(c *cli.Context) error {
+	return func(c *cli.Context) error {
+		err := runCommands(c, orchestra.Before)
+		if err != nil {
+			return err
+		}
+		err = runCommands(c, getConfigFieldByName(c.Command.Name).Before)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 }
 
-func GetBeforeFunc() func(c *cli.Context) {
-	return func(c *cli.Context) {
-		runCommands(c, orchestra.Before)
-		runCommands(c, getConfigFieldByName(c.Command.Name).Before)
-	}
-}
-
-func GetAfterFunc() func(c *cli.Context) {
-	return func(c *cli.Context) {
-		runCommands(c, orchestra.After)
-		runCommands(c, getConfigFieldByName(c.Command.Name).After)
+func GetAfterFunc() func(c *cli.Context) error {
+	return func(c *cli.Context) error {
+		err := runCommands(c, orchestra.After)
+		if err != nil {
+			return err
+		}
+		err = runCommands(c, getConfigFieldByName(c.Command.Name).After)
+		if err != nil {
+			return err
+		}
+		return nil
 	}
 }
 

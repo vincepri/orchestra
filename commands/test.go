@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"strings"
@@ -29,8 +30,10 @@ func TestAction(c *cli.Context) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		success, err := testService(c, service)
 		if err != nil {
+			appendError(err)
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 		} else if !success {
+			appendError(errors.New("Test Failed"))
 			terminal.Stdout.Colorf("%s%s| @{r} FAILED\n", service.Name, spacing)
 		} else {
 			terminal.Stdout.Colorf("%s%s| @{g} PASS\n", service.Name, spacing)

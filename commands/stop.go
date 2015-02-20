@@ -22,6 +22,7 @@ func StopAction(c *cli.Context) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		err := killService(service)
 		if err != nil {
+			appendError(err)
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 		} else if service.Process != nil {
 			terminal.Stdout.Colorf("%s%s| @{r} stopped\n", service.Name, spacing)

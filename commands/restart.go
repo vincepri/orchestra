@@ -22,11 +22,13 @@ func RestartAction(c *cli.Context) {
 
 		err := killService(service)
 		if err != nil {
+			appendError(err)
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}
 		err = startService(c, service)
 		if err != nil {
+			appendError(err)
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}

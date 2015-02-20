@@ -63,8 +63,14 @@ func ServicesBashComplete(c *cli.Context) {
 
 func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
 	return func(c *cli.Context) {
-		config.GetBeforeFunc()(c)
+		err := config.GetBeforeFunc()(c)
+		if err != nil {
+			appendError(err)
+		}
 		f(c)
-		config.GetAfterFunc()(c)
+		err = config.GetAfterFunc()(c)
+		if err != nil {
+			appendError(err)
+		}
 	}
 }
