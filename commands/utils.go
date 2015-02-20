@@ -54,11 +54,8 @@ func FilterServices(c *cli.Context) map[string]*services.Service {
 }
 
 func ServicesBashComplete(c *cli.Context) {
-	prefix := ""
-	if len(c.Args()) > 0 && strings.HasPrefix(c.Args()[0], "#") {
-		prefix = "#"
-	}
 	for name := range services.Registry {
-		fmt.Println(prefix + name)
+		fmt.Println(name)
+		fmt.Println("~" + name)
 	}
 }

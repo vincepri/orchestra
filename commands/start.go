@@ -8,6 +8,7 @@ import (
 
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
@@ -19,6 +20,7 @@ var StartCommand = &cli.Command{
 	BashComplete: ServicesBashComplete,
 }
 
+// StartAction starts all the services (or the specified ones)
 func StartAction(c *cli.Context) {
 	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
@@ -31,6 +33,10 @@ func StartAction(c *cli.Context) {
 	}
 }
 
+// startService takes a Service struct as input, creates a new log file in .orchestra,
+// redirects the command stdout and stderr to the log file, configures the environment
+// variables for the command and starts it. If cmd.Start() doesn't return any
+// error, it will write a service.pid file in .orchestra
 func startService(service *services.Service) error {
 	cmd := exec.Command(service.Name)
 	outputFile, err := os.Create(service.LogFilePath)
@@ -45,7 +51,7 @@ func startService(service *services.Service) error {
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	cmd.Env = services.OrchestraConfig.Environment
+	cmd.Env = config.GetEnvironmentVars(service)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

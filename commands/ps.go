@@ -14,6 +14,7 @@ var PsCommand = &cli.Command{
 	Action: PsAction,
 }
 
+// PsAction checks the status for every service and output the log
 func PsAction(c *cli.Context) {
 	for name, service := range services.Registry {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))

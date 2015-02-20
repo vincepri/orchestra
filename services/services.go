@@ -13,29 +13,43 @@ import (
 	log "github.com/cihub/seelog"
 )
 
-var OrchestraServicePath string
-var ProjectPath string
-var Registry map[string]*Service
-var MaxServiceNameLength int
-var colors = []string{"g", "b", "c", "m", "y", "w"}
+var (
+	// Internal Service Registry
+	Registry map[string]*Service
 
+	// Path variables
+	OrchestraServicePath string
+	ProjectPath          string
+
+	// Other internal variables
+	MaxServiceNameLength int
+	colors               = []string{"g", "b", "c", "m", "y", "w"}
+)
+
+// Service encapsulates all the information needed for a service
 type Service struct {
-	Name          string
-	Description   string
-	Path          string
-	Color         string
+	Name        string
+	Description string
+	Path        string
+	Color       string
+
+	// Path
 	OrchestraPath string
 	LogFilePath   string
 	PidFilePath   string
-	FileInfo      os.FileInfo
-	PackageInfo   *build.Package
-	Process       *os.Process
+
+	// Process, Service and Package information
+	FileInfo    os.FileInfo
+	PackageInfo *build.Package
+	Process     *os.Process
 }
 
 func init() {
 	Registry = make(map[string]*Service)
 }
 
+// Init initializes the OrchestraServicePath to the workingdir/.orchestra path
+// and starts the service discovery
 func Init() {
 	ProjectPath, _ = os.Getwd()
 	OrchestraServicePath = fmt.Sprintf("%s/.orchestra", ProjectPath)
@@ -46,6 +60,9 @@ func Init() {
 	DiscoverServices()
 }
 
+// DiscoverServices walks into the project path and looks in every subdirectory
+// for the service.yml file. For every service it registers it after trying
+// to import the package using Go's build.Import package
 func DiscoverServices() {
 	buildPath := strings.Replace(ProjectPath, os.Getenv("GOPATH")+"/src/", "", 1)
 	fd, _ := ioutil.ReadDir(ProjectPath)
@@ -81,6 +98,9 @@ func DiscoverServices() {
 				if _, err := os.Stat(service.PidFilePath); err == nil {
 					bytes, _ := ioutil.ReadFile(service.PidFilePath)
 					pid, _ := strconv.Atoi(string(bytes))
+
+					// When registering, we take care, on every run, to check
+					// if the process is still alive.
 					proc, procErr := os.FindProcess(pid)
 					if procErr == nil {
 						sigError := proc.Signal(syscall.Signal(0))

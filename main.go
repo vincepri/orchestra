@@ -7,12 +7,13 @@ import (
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/commands"
+	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 )
 
 var app *cli.App
 
-// init check for an existing orchestra.yml in the current working directory
+// init checks for an existing orchestra.yml in the current working directory
 // and creates a new .orchestra directory (if doesn't exist)
 func init() {
 	wd, _ := os.Getwd()
@@ -28,7 +29,7 @@ func init() {
 
 func main() {
 	defer log.Flush()
-	services.ParseGlobalConfig()
+	config.ParseGlobalConfig()
 	services.Init()
 	app = cli.NewApp()
 	app.Name = "Orchestra"

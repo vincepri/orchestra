@@ -17,6 +17,7 @@ var StopCommand = &cli.Command{
 	BashComplete: ServicesBashComplete,
 }
 
+// StopAction stops all the services (or the specified ones)
 func StopAction(c *cli.Context) {
 	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))

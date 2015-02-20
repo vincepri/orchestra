@@ -16,6 +16,7 @@ var RestartCommand = &cli.Command{
 	BashComplete: ServicesBashComplete,
 }
 
+// RestartAction restarts all the services (or the specified ones)
 func RestartAction(c *cli.Context) {
 	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
