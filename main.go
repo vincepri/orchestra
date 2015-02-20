@@ -35,6 +35,7 @@ func main() {
 	app.Usage = "Orchestrate Go Services"
 	app.Author = "Vincenzo Prignano"
 	app.Email = ""
+	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{
 		*commands.StartCommand,
 		*commands.StopCommand,

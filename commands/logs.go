@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/ActiveState/tail"
 	log "github.com/cihub/seelog"
@@ -12,9 +13,10 @@ import (
 )
 
 var LogsCommand = &cli.Command{
-	Name:   "logs",
-	Usage:  "Aggregate services logs",
-	Action: LogsAction,
+	Name:         "logs",
+	Usage:        "Aggregate services logs",
+	Action:       LogsAction,
+	BashComplete: ServicesBashComplete,
 }
 
 var logReceiver chan string
@@ -24,22 +26,23 @@ func init() {
 }
 
 func LogsAction(c *cli.Context) {
-	done := make(chan bool)
-	go ConsumeLogs(done)
+	go ConsumeLogs()
+	wg := &sync.WaitGroup{}
 	for _, service := range FilterServices(c) {
-		go TailServiceLog(service)
+		wg.Add(1)
+		go TailServiceLog(service, wg)
 	}
-	<-done
+	wg.Wait()
+	close(logReceiver)
 }
 
-func ConsumeLogs(done chan bool) {
+func ConsumeLogs() {
 	for log := range logReceiver {
 		terminal.Stdout.Colorf(log)
 	}
-	done <- true
 }
 
-func TailServiceLog(service *services.Service) {
+func TailServiceLog(service *services.Service, wg *sync.WaitGroup) {
 	spacingLength := services.MaxServiceNameLength + 2 - len(service.Name)
 	t, err := tail.TailFile(service.LogFilePath, tail.Config{Follow: true})
 	if err != nil {
@@ -48,4 +51,5 @@ func TailServiceLog(service *services.Service) {
 	for line := range t.Lines {
 		logReceiver <- fmt.Sprintf("@{%s}%s@{|}%s|  %s\n", service.Color, service.Name, strings.Repeat(" ", spacingLength), line.Text)
 	}
+	wg.Done()
 }

@@ -11,9 +11,10 @@ import (
 )
 
 var StopCommand = &cli.Command{
-	Name:   "stop",
-	Usage:  "Stops all the services",
-	Action: StopAction,
+	Name:         "stop",
+	Usage:        "Stops all the services",
+	Action:       StopAction,
+	BashComplete: ServicesBashComplete,
 }
 
 func StopAction(c *cli.Context) {

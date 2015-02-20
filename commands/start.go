@@ -13,9 +13,10 @@ import (
 )
 
 var StartCommand = &cli.Command{
-	Name:   "start",
-	Usage:  "Starts all the services",
-	Action: StartAction,
+	Name:         "start",
+	Usage:        "Starts all the services",
+	Action:       StartAction,
+	BashComplete: ServicesBashComplete,
 }
 
 func StartAction(c *cli.Context) {

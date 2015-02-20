@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"fmt"
 	"math"
 	"os"
 	"strings"
@@ -50,4 +51,14 @@ func FilterServices(c *cli.Context) map[string]*services.Service {
 		}
 	}
 	return services.Registry
+}
+
+func ServicesBashComplete(c *cli.Context) {
+	prefix := ""
+	if len(c.Args()) > 0 && strings.HasPrefix(c.Args()[0], "#") {
+		prefix = "#"
+	}
+	for name := range services.Registry {
+		fmt.Println(prefix + name)
+	}
 }

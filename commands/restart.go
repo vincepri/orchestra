@@ -10,9 +10,10 @@ import (
 )
 
 var RestartCommand = &cli.Command{
-	Name:   "restart",
-	Usage:  "Restarts all the services",
-	Action: RestartAction,
+	Name:         "restart",
+	Usage:        "Restarts all the services",
+	Action:       RestartAction,
+	BashComplete: ServicesBashComplete,
 }
 
 func RestartAction(c *cli.Context) {
