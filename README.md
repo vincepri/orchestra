@@ -19,7 +19,7 @@ In a service oriented architecture, an existing challenge is to manage running b
 
 ## Command Line Cmd/Flags Proposal
 - `start`
-    - *noreload*: doesn't use rerun
+    - *rerun*: uses rerun to run the services
     - *scale*: overwrites the defined scale parameter
 - `stop`
 - `restart`
