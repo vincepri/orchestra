@@ -44,6 +44,7 @@ func ParseGlobalConfig() {
 		os.Exit(1)
 	}
 	yaml.Unmarshal(b, &orchestra)
+	orchestra.Env = append(os.Environ(), orchestra.Env...)
 }
 
 // GetEnvironment returns all the environment variables for a given service
@@ -58,7 +59,7 @@ func runCommands(c *cli.Context, cmds []string) {
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Env = append(os.Environ(), orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
+		cmd.Env = append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
 		err := cmd.Start()
 		if err != nil {
 			seelog.Error(err.Error())

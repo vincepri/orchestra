@@ -5,7 +5,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
@@ -45,7 +44,6 @@ func TestAction(c *cli.Context) {
 // error, it will write a service.pid file in .orchestra
 func testService(c *cli.Context, service *services.Service) (bool, error) {
 	var cmd *exec.Cmd
-	seelog.Info(c.Bool("verbose"))
 	if c.Bool("verbose") {
 		cmd = exec.Command("go", "test", "-v", "./...")
 	} else {
