@@ -13,6 +13,12 @@ var RestartCommand = &cli.Command{
 	Usage:        "Restarts all the services",
 	Action:       BeforeAfterWrapper(RestartAction),
 	BashComplete: ServicesBashComplete,
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name:  "attach, a",
+			Usage: "Attach logs right after starting",
+		},
+	},
 }
 
 // RestartAction restarts all the services (or the specified ones)
@@ -34,5 +40,8 @@ func RestartAction(c *cli.Context) {
 		}
 
 		terminal.Stdout.Colorf("%s%s| @{c} restarted\n", service.Name, spacing)
+	}
+	if c.Bool("attach") {
+		LogsAction(c)
 	}
 }

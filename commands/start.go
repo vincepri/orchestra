@@ -19,6 +19,12 @@ var StartCommand = &cli.Command{
 	Usage:        "Starts all the services",
 	Action:       BeforeAfterWrapper(StartAction),
 	BashComplete: ServicesBashComplete,
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name:  "attach, a",
+			Usage: "Attach logs right after starting",
+		},
+	},
 }
 
 // StartAction starts all the services (or the specified ones)
@@ -36,6 +42,9 @@ func StartAction(c *cli.Context) {
 		} else {
 			terminal.Stdout.Colorf("%s%s| @{c} already running\n", service.Name, spacing)
 		}
+	}
+	if c.Bool("attach") {
+		LogsAction(c)
 	}
 }
 
