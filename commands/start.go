@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
@@ -16,7 +15,7 @@ import (
 var StartCommand = &cli.Command{
 	Name:         "start",
 	Usage:        "Starts all the services",
-	Action:       BeforeAfterWrapper("start", StartAction),
+	Action:       BeforeAfterWrapper(StartAction),
 	BashComplete: ServicesBashComplete,
 }
 
@@ -25,9 +24,9 @@ func StartAction(c *cli.Context) {
 	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process == nil {
-			err := startService(service)
+			err := startService(c, service)
 			if err != nil {
-				log.Error(err)
+				terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			} else {
 				terminal.Stdout.Colorf("%s%s| @{g} started\n", service.Name, spacing)
 			}
@@ -41,7 +40,7 @@ func StartAction(c *cli.Context) {
 // redirects the command stdout and stderr to the log file, configures the environment
 // variables for the command and starts it. If cmd.Start() doesn't return any
 // error, it will write a service.pid file in .orchestra
-func startService(service *services.Service) error {
+func startService(c *cli.Context, service *services.Service) error {
 	cmd := exec.Command(service.Name)
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
@@ -55,7 +54,7 @@ func startService(service *services.Service) error {
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	cmd.Env = config.GetEnvironmentVars(service)
+	cmd.Env = config.GetEnvironmentVars(c, service)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

@@ -11,10 +11,10 @@ import (
 var PsCommand = &cli.Command{
 	Name:   "ps",
 	Usage:  "Outputs the status of all services",
-	Action: PsAction,
+	Action: BeforeAfterWrapper(PsAction),
 }
 
-// PsAction checks the status for every service and output the log
+// PsAction checks the status for every service and output
 func PsAction(c *cli.Context) {
 	for name, service := range services.Registry {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))

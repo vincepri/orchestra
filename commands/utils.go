@@ -61,10 +61,10 @@ func ServicesBashComplete(c *cli.Context) {
 	}
 }
 
-func BeforeAfterWrapper(cmdName string, f func(c *cli.Context)) func(c *cli.Context) {
+func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
 	return func(c *cli.Context) {
-		config.GetBeforeFunc(cmdName)(c)
+		config.GetBeforeFunc()(c)
 		f(c)
-		config.GetAfterFunc(cmdName)(c)
+		config.GetAfterFunc()(c)
 	}
 }

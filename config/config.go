@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"reflect"
 	"strings"
 
 	"github.com/cihub/seelog"
@@ -14,10 +15,24 @@ import (
 
 var orchestra *Config
 
+type ContextConfig struct {
+	Env    []string `env,omitempty`
+	Before []string `before,omitempty`
+	After  []string `after,omitempty`
+}
+
 type Config struct {
-	Environment []string            `environment,omitempty`
-	Before      map[string][]string `before,omitempty`
-	After       map[string][]string `after,omitempty`
+	// Global Configuration
+	Env    []string `env,omitempty`
+	Before []string `before,omitempty`
+	After  []string `after,omitempty`
+
+	// Configuration for Commands
+	Start   ContextConfig `start,omitempty`
+	Stop    ContextConfig `stop,omitempty`
+	Restart ContextConfig `restart,omitempty`
+	Ps      ContextConfig `ps,omitempty`
+	Logs    ContextConfig `logs,omitempty`
 }
 
 func ParseGlobalConfig() {
@@ -32,8 +47,8 @@ func ParseGlobalConfig() {
 
 // GetEnvironment returns all the environment variables for a given service
 // including the ones specified in the global config
-func GetEnvironmentVars(service *services.Service) []string {
-	return orchestra.Environment
+func GetEnvironmentVars(c *cli.Context, service *services.Service) []string {
+	return append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
 }
 
 func runCommands(cmds []string) {
@@ -50,14 +65,23 @@ func runCommands(cmds []string) {
 	}
 }
 
-func GetBeforeFunc(cmdName string) func(c *cli.Context) {
+func GetBeforeFunc() func(c *cli.Context) {
 	return func(c *cli.Context) {
-		runCommands(orchestra.Before[cmdName])
+		runCommands(orchestra.Before)
+		runCommands(getConfigFieldByName(c.Command.Name).Before)
 	}
 }
 
-func GetAfterFunc(cmdName string) func(c *cli.Context) {
+func GetAfterFunc() func(c *cli.Context) {
 	return func(c *cli.Context) {
-		runCommands(orchestra.After[cmdName])
+		runCommands(orchestra.After)
+		runCommands(getConfigFieldByName(c.Command.Name).After)
 	}
+}
+
+func getConfigFieldByName(name string) ContextConfig {
+	initial := strings.Split(name, "")[0]
+	value := reflect.ValueOf(orchestra)
+	f := reflect.Indirect(value).FieldByName(strings.Replace(name, initial, strings.ToUpper(initial), 1))
+	return f.Interface().(ContextConfig)
 }

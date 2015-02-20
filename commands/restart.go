@@ -3,7 +3,6 @@ package commands
 import (
 	"strings"
 
-	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
@@ -12,7 +11,7 @@ import (
 var RestartCommand = &cli.Command{
 	Name:         "restart",
 	Usage:        "Restarts all the services",
-	Action:       BeforeAfterWrapper("restart", RestartAction),
+	Action:       BeforeAfterWrapper(RestartAction),
 	BashComplete: ServicesBashComplete,
 }
 
@@ -23,12 +22,12 @@ func RestartAction(c *cli.Context) {
 
 		err := killService(service)
 		if err != nil {
-			log.Error(err.Error())
+			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}
-		err = startService(service)
+		err = startService(c, service)
 		if err != nil {
-			log.Error(err.Error())
+			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}
 

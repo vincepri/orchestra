@@ -15,7 +15,7 @@ import (
 var LogsCommand = &cli.Command{
 	Name:         "logs",
 	Usage:        "Aggregate services logs",
-	Action:       LogsAction,
+	Action:       BeforeAfterWrapper(LogsAction),
 	BashComplete: ServicesBashComplete,
 }
 
