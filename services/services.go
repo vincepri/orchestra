@@ -86,6 +86,7 @@ func DiscoverServices() {
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
 					Color:         colors[len(Registry)%len(colors)],
+					Path:          fmt.Sprintf("%s/%s", ProjectPath, item.Name()),
 				}
 
 				// Because I like nice logging

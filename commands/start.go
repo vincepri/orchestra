@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"os/exec"
 	"strconv"
@@ -41,6 +43,10 @@ func StartAction(c *cli.Context) {
 // variables for the command and starts it. If cmd.Start() doesn't return any
 // error, it will write a service.pid file in .orchestra
 func startService(c *cli.Context, service *services.Service) error {
+	err := buildService(service)
+	if err != nil {
+		return err
+	}
 	cmd := exec.Command(service.Name)
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
@@ -59,5 +65,22 @@ func startService(c *cli.Context, service *services.Service) error {
 		return err
 	}
 	pidFile.WriteString(strconv.Itoa(cmd.Process.Pid))
+	return nil
+}
+
+func buildService(service *services.Service) error {
+	cmd := exec.Command("go", "get")
+	cmd.Dir = service.Path
+	output := bytes.NewBuffer([]byte{})
+	cmd.Stdout = output
+	cmd.Stderr = output
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	if !cmd.ProcessState.Success() {
+		return fmt.Errorf("Failed to build service %s\n%s", service.Name, output.String())
+	}
 	return nil
 }
