@@ -7,6 +7,7 @@ import (
 
 	"github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
@@ -53,6 +54,7 @@ func testService(c *cli.Context, service *services.Service) (bool, error) {
 	cmd.Dir = service.Path
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Env = config.GetEnvForService(c, service)
 	err := cmd.Start()
 	if err != nil {
 		return false, err

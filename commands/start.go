@@ -60,7 +60,7 @@ func startService(c *cli.Context, service *services.Service) error {
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	cmd.Env = config.GetEnvironmentVars(c, service)
+	cmd.Env = config.GetEnvForService(c, service)
 	if err := cmd.Start(); err != nil {
 		return err
 	}

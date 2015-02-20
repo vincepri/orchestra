@@ -48,16 +48,17 @@ func ParseGlobalConfig() {
 
 // GetEnvironment returns all the environment variables for a given service
 // including the ones specified in the global config
-func GetEnvironmentVars(c *cli.Context, service *services.Service) []string {
-	return append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
+func GetEnvForService(c *cli.Context, service *services.Service) []string {
+	return append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...) // TODO: Add the env from service.yml
 }
 
-func runCommands(cmds []string) {
+func runCommands(c *cli.Context, cmds []string) {
 	for _, command := range cmds {
 		cmdLine := strings.Split(command, " ")
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		cmd.Env = append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
 		err := cmd.Start()
 		if err != nil {
 			seelog.Error(err.Error())
@@ -68,15 +69,15 @@ func runCommands(cmds []string) {
 
 func GetBeforeFunc() func(c *cli.Context) {
 	return func(c *cli.Context) {
-		runCommands(orchestra.Before)
-		runCommands(getConfigFieldByName(c.Command.Name).Before)
+		runCommands(c, orchestra.Before)
+		runCommands(c, getConfigFieldByName(c.Command.Name).Before)
 	}
 }
 
 func GetAfterFunc() func(c *cli.Context) {
 	return func(c *cli.Context) {
-		runCommands(orchestra.After)
-		runCommands(getConfigFieldByName(c.Command.Name).After)
+		runCommands(c, orchestra.After)
+		runCommands(c, getConfigFieldByName(c.Command.Name).After)
 	}
 }
 
