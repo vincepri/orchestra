@@ -58,7 +58,7 @@ func runCommands(c *cli.Context, cmds []string) {
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Env = append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
+		cmd.Env = append(os.Environ(), orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
 		err := cmd.Start()
 		if err != nil {
 			seelog.Error(err.Error())
