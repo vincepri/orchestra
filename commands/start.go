@@ -16,7 +16,7 @@ import (
 var StartCommand = &cli.Command{
 	Name:         "start",
 	Usage:        "Starts all the services",
-	Action:       StartAction,
+	Action:       BeforeAfterWrapper("start", StartAction),
 	BashComplete: ServicesBashComplete,
 }
 
@@ -24,11 +24,15 @@ var StartCommand = &cli.Command{
 func StartAction(c *cli.Context) {
 	for _, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
-		err := startService(service)
-		if err != nil {
-			log.Error(err)
+		if service.Process == nil {
+			err := startService(service)
+			if err != nil {
+				log.Error(err)
+			} else {
+				terminal.Stdout.Colorf("%s%s| @{g} started\n", service.Name, spacing)
+			}
 		} else {
-			terminal.Stdout.Colorf("%s%s| @{g} started\n", service.Name, spacing)
+			terminal.Stdout.Colorf("%s%s| @{c} already running\n", service.Name, spacing)
 		}
 	}
 }

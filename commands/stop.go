@@ -13,7 +13,7 @@ import (
 var StopCommand = &cli.Command{
 	Name:         "stop",
 	Usage:        "Stops all the services",
-	Action:       StopAction,
+	Action:       BeforeAfterWrapper("stop", StopAction),
 	BashComplete: ServicesBashComplete,
 }
 

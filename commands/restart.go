@@ -12,7 +12,7 @@ import (
 var RestartCommand = &cli.Command{
 	Name:         "restart",
 	Usage:        "Restarts all the services",
-	Action:       RestartAction,
+	Action:       BeforeAfterWrapper("restart", RestartAction),
 	BashComplete: ServicesBashComplete,
 }
 

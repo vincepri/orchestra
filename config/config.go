@@ -3,8 +3,11 @@ package config
 import (
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"strings"
 
 	"github.com/cihub/seelog"
+	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
 	"gopkg.in/yaml.v2"
 )
@@ -31,4 +34,29 @@ func ParseGlobalConfig() {
 // including the ones specified in the global config
 func GetEnvironmentVars(service *services.Service) []string {
 	return orchestra.Environment
+}
+
+func runCommands(cmds []string) {
+	for _, command := range cmds {
+		cmdLine := strings.Split(command, " ")
+		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Start()
+		if err != nil {
+			seelog.Error(err.Error())
+		}
+	}
+}
+
+func GetBeforeFunc(cmdName string) func(c *cli.Context) {
+	return func(c *cli.Context) {
+		runCommands(orchestra.Before[cmdName])
+	}
+}
+
+func GetAfterFunc(cmdName string) func(c *cli.Context) {
+	return func(c *cli.Context) {
+		runCommands(orchestra.After[cmdName])
+	}
 }

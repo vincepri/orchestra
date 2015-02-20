@@ -8,6 +8,7 @@ import (
 
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 )
 
@@ -57,5 +58,13 @@ func ServicesBashComplete(c *cli.Context) {
 	for name := range services.Registry {
 		fmt.Println(name)
 		fmt.Println("~" + name)
+	}
+}
+
+func BeforeAfterWrapper(cmdName string, f func(c *cli.Context)) func(c *cli.Context) {
+	return func(c *cli.Context) {
+		config.GetBeforeFunc(cmdName)(c)
+		f(c)
+		config.GetAfterFunc(cmdName)(c)
 	}
 }
