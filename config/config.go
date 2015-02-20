@@ -33,6 +33,7 @@ type Config struct {
 	Restart ContextConfig `restart,omitempty`
 	Ps      ContextConfig `ps,omitempty`
 	Logs    ContextConfig `logs,omitempty`
+	Test    ContextConfig `test,omitempty`
 }
 
 func ParseGlobalConfig() {
