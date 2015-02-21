@@ -48,7 +48,7 @@ func main() {
 			os.Exit(1)
 		}
 		services.ProjectPath, _ = path.Split(config.ConfigPath)
-		services.OrchestraServicePath = services.ProjectPath + "/.orchestra"
+		services.OrchestraServicePath = services.ProjectPath + ".orchestra"
 
 		if err := os.Mkdir(services.OrchestraServicePath, 0766); err != nil && os.IsNotExist(err) {
 			fmt.Println(err.Error())

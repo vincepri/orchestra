@@ -16,7 +16,7 @@ var PsCommand = &cli.Command{
 
 // PsAction checks the status for every service and output
 func PsAction(c *cli.Context) {
-	for name, service := range services.Registry {
+	for name, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process != nil {
 			terminal.Stdout.Colorf("@{g}%s", name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d\n", service.Process.Pid)
