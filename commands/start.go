@@ -79,7 +79,7 @@ func startService(c *cli.Context, service *services.Service) error {
 }
 
 func buildService(service *services.Service) error {
-	cmd := exec.Command("go", "get")
+	cmd := exec.Command("go", "get", "-installsuffix", "orchestra")
 	cmd.Dir = service.Path
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output
