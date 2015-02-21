@@ -16,18 +16,20 @@ import (
 
 var orchestra *Config
 var ConfigPath string
+var globalEnvs []string
 
 type ContextConfig struct {
-	Env    []string `env,omitempty`
-	Before []string `before,omitempty`
-	After  []string `after,omitempty`
+	Env    map[string]string `env,omitempty`
+	Before []string          `before,omitempty`
+	After  []string          `after,omitempty`
 }
 
 type Config struct {
 	// Global Configuration
-	Env    []string `env,omitempty`
-	Before []string `before,omitempty`
-	After  []string `after,omitempty`
+	Env    map[string]string `env,omitempty`
+	Before []string          `before,omitempty`
+	After  []string          `after,omitempty`
+	Scale  int
 
 	// Configuration for Commands
 	Start   ContextConfig `start,omitempty`
@@ -46,13 +48,25 @@ func ParseGlobalConfig() {
 		os.Exit(1)
 	}
 	yaml.Unmarshal(b, &orchestra)
-	orchestra.Env = append(os.Environ(), orchestra.Env...)
+
+	globalEnvs = os.Environ()
+	for k, v := range orchestra.Env {
+		globalEnvs = append(globalEnvs, fmt.Sprintf("%s=%s", k, v))
+	}
 }
 
 // GetEnvironment returns all the environment variables for a given service
 // including the ones specified in the global config
 func GetEnvForService(c *cli.Context, service *services.Service) []string {
-	return append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...) // TODO: Add the env from service.yml
+	return GetEnvForCommand(c)
+}
+
+func GetEnvForCommand(c *cli.Context) []string {
+	envs := globalEnvs
+	for k, v := range getConfigFieldByName(c.Command.Name).Env {
+		envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+	}
+	return envs
 }
 
 func runCommands(c *cli.Context, cmds []string) error {
@@ -61,7 +75,7 @@ func runCommands(c *cli.Context, cmds []string) error {
 		cmd := exec.Command(cmdLine[0], cmdLine[1:]...)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-		cmd.Env = append(orchestra.Env, getConfigFieldByName(c.Command.Name).Env...)
+		cmd.Env = GetEnvForCommand(c)
 		err := cmd.Start()
 		if err != nil {
 			return err
