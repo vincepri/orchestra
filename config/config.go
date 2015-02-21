@@ -10,7 +10,6 @@ import (
 
 	"github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/services"
 	"gopkg.in/yaml.v2"
 )
 
@@ -26,10 +25,10 @@ type ContextConfig struct {
 
 type Config struct {
 	// Global Configuration
-	Env    map[string]string `env,omitempty`
-	Before []string          `before,omitempty`
-	After  []string          `after,omitempty`
-	Scale  int
+	Env        map[string]string `env,omitempty`
+	Before     []string          `before,omitempty`
+	After      []string          `after,omitempty`
+	LocalBuild bool              `localbuild,omitempty`
 
 	// Configuration for Commands
 	Start   ContextConfig `start,omitempty`
@@ -38,6 +37,10 @@ type Config struct {
 	Ps      ContextConfig `ps,omitempty`
 	Logs    ContextConfig `logs,omitempty`
 	Test    ContextConfig `test,omitempty`
+}
+
+func LocalBuild() bool {
+	return orchestra.LocalBuild
 }
 
 func ParseGlobalConfig() {
@@ -53,12 +56,6 @@ func ParseGlobalConfig() {
 	for k, v := range orchestra.Env {
 		globalEnvs = append(globalEnvs, fmt.Sprintf("%s=%s", k, v))
 	}
-}
-
-// GetEnvironment returns all the environment variables for a given service
-// including the ones specified in the global config
-func GetEnvForService(c *cli.Context, service *services.Service) []string {
-	return GetEnvForCommand(c)
 }
 
 func GetEnvForCommand(c *cli.Context) []string {

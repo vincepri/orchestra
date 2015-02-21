@@ -7,9 +7,9 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"syscall"
 
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
@@ -57,7 +57,7 @@ func startService(c *cli.Context, service *services.Service) error {
 	if err != nil {
 		return err
 	}
-	cmd := exec.Command(service.Name)
+	cmd := exec.Command(service.BinPath)
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
 		return err
@@ -70,7 +70,8 @@ func startService(c *cli.Context, service *services.Service) error {
 	defer pidFile.Close()
 	cmd.Stdout = outputFile
 	cmd.Stderr = outputFile
-	cmd.Env = config.GetEnvForService(c, service)
+	cmd.Env = GetEnvForService(c, service)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 	if err := cmd.Start(); err != nil {
 		return err
 	}
@@ -79,7 +80,11 @@ func startService(c *cli.Context, service *services.Service) error {
 }
 
 func buildService(service *services.Service) error {
-	cmd := exec.Command("go", "get", "-installsuffix", "orchestra")
+	cmdArgs := []string{"get", "-installsuffix", "orchestra"}
+	if service.BinPath != "" {
+		cmdArgs = []string{"build", "-o", service.BinPath, "-installsuffix", "orchestra"}
+	}
+	cmd := exec.Command("go", cmdArgs...)
 	cmd.Dir = service.Path
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output

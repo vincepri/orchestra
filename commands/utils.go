@@ -74,3 +74,9 @@ func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
 		}
 	}
 }
+
+// GetEnvForService returns all the environment variables for a given service
+// including the ones specified in the global config
+func GetEnvForService(c *cli.Context, service *services.Service) []string {
+	return config.GetEnvForCommand(c)
+}

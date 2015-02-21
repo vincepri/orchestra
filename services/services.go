@@ -11,6 +11,7 @@ import (
 	"go/build"
 
 	log "github.com/cihub/seelog"
+	"github.com/vinceprignano/orchestra/config"
 )
 
 var (
@@ -37,6 +38,7 @@ type Service struct {
 	OrchestraPath string
 	LogFilePath   string
 	PidFilePath   string
+	BinPath       string
 
 	// Process, Service and Package information
 	FileInfo    os.FileInfo
@@ -81,6 +83,12 @@ func DiscoverServices() {
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
 					Color:         colors[len(Registry)%len(colors)],
 					Path:          fmt.Sprintf("%s/%s", ProjectPath, item.Name()),
+				}
+
+				if config.LocalBuild() {
+					service.BinPath = fmt.Sprintf("%s/bin/%s", OrchestraServicePath, item.Name())
+				} else {
+					service.BinPath = item.Name()
 				}
 
 				// Because I like nice logging
