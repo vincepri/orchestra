@@ -45,13 +45,17 @@ Commands
 - **start** `--option [<service>...]` Starts every service
 > _Options:_
 > 
-> `-a` `--attach` Attach to logs after starting
+> `--attach, -a` Attach to services output after start
+>
+> `--logs, -l`	Start logging after start
 
 - **stop** `--option [<service>...]` Stops every service
 - **restart** `--option [<service>...]` Restarts every service
 > _Options:_
 > 
-> `-a` `--attach` Attach to logs after starting
+> `--attach, -a` Attach to services output after start
+>
+> `--logs, -l`	Start logging after start
 
 - **logs** `--option [<service>...]` Aggregates the output from the services
 - **test** `--option [<service>...]` Runs `go test ./...` for every service
@@ -65,6 +69,8 @@ Commands
 
 A service name can be prefixed with `~` to run a command in exclusion mode.
 For example `orchestra start ~second-service` will start everything expect the second-service.
+
+> When using `-a` or `--attach` with start/restart, the services will be spawned in the same ochestra's process group. 
 
 ## Configuring commands
 Every command can be configured separately with special environment variables or with before/after commands.
