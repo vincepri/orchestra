@@ -10,7 +10,6 @@ import (
 	"syscall"
 
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
@@ -55,16 +54,25 @@ func StartAction(c *cli.Context) {
 // error, it will write a service.pid file in .orchestra
 func startService(c *cli.Context, service *services.Service) error {
 	var cmd *exec.Cmd
-	if config.UseGoRun() {
-		cmd = exec.Command("go", "run", "main.go")
-		cmd.Dir = service.Path
-	} else {
+
+	cmd = exec.Command(service.Name)
+
+	if c.Bool("goget") {
 		err := buildService(service)
 		if err != nil {
 			return err
 		}
-		cmd = exec.Command(service.Name)
+	} else {
+		err := installService(service)
+		if err != nil {
+			return err
+		}
+		if c.Bool("gorun") {
+			cmd = exec.Command("go", "run", "main.go")
+			cmd.Dir = service.Path
+		}
 	}
+
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
 		return err
@@ -86,7 +94,7 @@ func startService(c *cli.Context, service *services.Service) error {
 	return nil
 }
 
-// buildService runs go get ./... inside every service path
+// buildService runs go get ./... in the service directory
 func buildService(service *services.Service) error {
 	cmd := exec.Command("go", "get", "./...")
 	cmd.Dir = service.Path
@@ -99,7 +107,25 @@ func buildService(service *services.Service) error {
 	}
 	cmd.Wait()
 	if !cmd.ProcessState.Success() {
-		return fmt.Errorf("Failed to build service %s\n%s", service.Name, output.String())
+		return fmt.Errorf("Failed to `go get` service %s\n%s", service.Name, output.String())
+	}
+	return nil
+}
+
+// installService runs go install in the service directory
+func installService(service *services.Service) error {
+	cmd := exec.Command("go", "install")
+	cmd.Dir = service.Path
+	output := bytes.NewBuffer([]byte{})
+	cmd.Stdout = output
+	cmd.Stderr = output
+	err := cmd.Start()
+	if err != nil {
+		return err
+	}
+	cmd.Wait()
+	if !cmd.ProcessState.Success() {
+		return fmt.Errorf("Failed to install service %s\n%s", service.Name, output.String())
 	}
 	return nil
 }
