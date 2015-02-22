@@ -80,9 +80,9 @@ func startService(c *cli.Context, service *services.Service) error {
 }
 
 func buildService(service *services.Service) error {
-	cmdArgs := []string{"get", "-installsuffix", "orchestra"}
+	cmdArgs := []string{"install"}
 	if service.BinPath != "" {
-		cmdArgs = []string{"build", "-o", service.BinPath, "-installsuffix", "orchestra"}
+		cmdArgs = []string{"build", "-o", service.BinPath}
 	}
 	cmd := exec.Command("go", cmdArgs...)
 	cmd.Dir = service.Path
