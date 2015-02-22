@@ -25,10 +25,10 @@ type ContextConfig struct {
 
 type Config struct {
 	// Global Configuration
-	Env        map[string]string `env,omitempty`
-	Before     []string          `before,omitempty`
-	After      []string          `after,omitempty`
-	LocalBuild bool              `localbuild,omitempty`
+	Env    map[string]string `env,omitempty`
+	Before []string          `before,omitempty`
+	After  []string          `after,omitempty`
+	GoRun  bool              `gorun,omitempty`
 
 	// Configuration for Commands
 	Start   ContextConfig `start,omitempty`
@@ -39,8 +39,8 @@ type Config struct {
 	Test    ContextConfig `test,omitempty`
 }
 
-func LocalBuild() bool {
-	return orchestra.LocalBuild
+func UseGoRun() bool {
+	return orchestra.GoRun
 }
 
 func ParseGlobalConfig() {

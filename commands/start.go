@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/codegangsta/cli"
+	"github.com/vinceprignano/orchestra/config"
 	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
@@ -53,11 +54,17 @@ func StartAction(c *cli.Context) {
 // variables for the command and starts it. If cmd.Start() doesn't return any
 // error, it will write a service.pid file in .orchestra
 func startService(c *cli.Context, service *services.Service) error {
-	err := buildService(service)
-	if err != nil {
-		return err
+	var cmd *exec.Cmd
+	if config.UseGoRun() {
+		cmd = exec.Command("go", "run", "main.go")
+		cmd.Dir = service.Path
+	} else {
+		err := buildService(service)
+		if err != nil {
+			return err
+		}
+		cmd = exec.Command(service.Name)
 	}
-	cmd := exec.Command(service.BinPath)
 	outputFile, err := os.Create(service.LogFilePath)
 	if err != nil && os.IsNotExist(err) {
 		return err
@@ -79,12 +86,9 @@ func startService(c *cli.Context, service *services.Service) error {
 	return nil
 }
 
+// buildService runs go get ./... inside every service path
 func buildService(service *services.Service) error {
-	cmdArgs := []string{"install"}
-	if service.BinPath != "" {
-		cmdArgs = []string{"build", "-o", service.BinPath}
-	}
-	cmd := exec.Command("go", cmdArgs...)
+	cmd := exec.Command("go", "get", "./...")
 	cmd.Dir = service.Path
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output
