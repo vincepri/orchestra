@@ -41,7 +41,7 @@ func StartAction(c *cli.Context) {
 				appendError(err)
 				terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			} else {
-				var rebuiltStatus string
+				rebuiltStatus := ""
 				if rebuilt {
 					rebuiltStatus = "rebuilt & "
 				}
