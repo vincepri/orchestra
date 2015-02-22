@@ -2,6 +2,7 @@ package commands
 
 import (
 	"strings"
+	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
@@ -27,28 +28,40 @@ var RestartCommand = &cli.Command{
 
 // RestartAction restarts all the services (or the specified ones)
 func RestartAction(c *cli.Context) {
+	wg := &sync.WaitGroup{}
 	for _, service := range FilterServices(c) {
-		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
-
-		err := killService(service)
-		if err != nil {
-			appendError(err)
-			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
-			continue
-		}
-		rebuilt, err := buildAndStart(c, service)
-		if err != nil {
-			appendError(err)
-			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
-			continue
-		}
-		rebuiltStatus := ""
-		if rebuilt {
-			rebuiltStatus = "rebuilt & "
-		}
-		terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
+		wg.Add(1)
+		go restart(wg, c, service)
 	}
+	wg.Wait()
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+}
+
+func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
+
+	err := killService(service)
+	if err != nil {
+		appendError(err)
+		terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
+		return
+	}
+
+	rebuilt, err := buildAndStart(c, service)
+	if err != nil {
+		appendError(err)
+		terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
+		return
+	}
+
+	var rebuitStatus string
+	if rebuilt {
+		rebuiltStatus = "rebuilt & "
+	}
+
+	terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
+
+	wg.Done()
 }

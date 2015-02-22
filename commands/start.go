@@ -7,7 +7,9 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
+	"time"
 
 	"github.com/codegangsta/cli"
 	"github.com/vinceprignano/orchestra/services"
@@ -33,27 +35,35 @@ var StartCommand = &cli.Command{
 
 // StartAction starts all the services (or the specified ones)
 func StartAction(c *cli.Context) {
+	wg := &sync.WaitGroup{}
 	for _, service := range FilterServices(c) {
-		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
-		if service.Process == nil {
-			rebuilt, err := buildAndStart(c, service)
-			if err != nil {
-				appendError(err)
-				terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
-			} else {
-				rebuiltStatus := ""
-				if rebuilt {
-					rebuiltStatus = "rebuilt & "
-				}
-				terminal.Stdout.Colorf("%s%s| @{g} %sstarted\n", service.Name, spacing, rebuiltStatus)
-			}
-		} else {
-			terminal.Stdout.Colorf("%s%s| @{c} %salready running\n", service.Name, spacing)
-		}
+		wg.Add(1)
+		go start(wg, c, service)
 	}
+	wg.Wait()
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+}
+
+func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
+	if service.Process == nil {
+		rebuilt, err := buildAndStart(c, service)
+		if err != nil {
+			appendError(err)
+			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
+		} else {
+			var rebuiltStatus string
+			if rebuilt {
+				rebuiltStatus = "rebuilt & "
+			}
+			terminal.Stdout.Colorf("%s%s| @{g} %sstarted\n", service.Name, spacing, rebuiltStatus)
+		}
+	} else {
+		terminal.Stdout.Colorf("%s%s| @{c} already running\n", service.Name, spacing)
+	}
+	wg.Done()
 }
 
 // startService takes a Service struct as input, creates a new log file in .orchestra,
@@ -61,7 +71,7 @@ func StartAction(c *cli.Context) {
 // variables for the command and starts it. If cmd.Start() doesn't return any
 // error, it will write a service.pid file in .orchestra
 func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
-	cmd := exec.Command(service.Name)
+	cmd := exec.Command(service.BinPath)
 
 	rebuilt, err := buildService(service)
 	if err != nil {
@@ -90,6 +100,10 @@ func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 		return rebuilt, err
 	}
 	pidFile.WriteString(strconv.Itoa(cmd.Process.Pid))
+	time.Sleep(200 * time.Millisecond)
+	// if !service.IsRunning() {
+	// 	return rebuilt, fmt.Errorf("Service %s exited after %s", cmd.ProcessState.UserTime().String())
+	// }
 	return rebuilt, nil
 }
 

@@ -37,6 +37,7 @@ type Service struct {
 	OrchestraPath string
 	LogFilePath   string
 	PidFilePath   string
+	BinPath       string
 
 	// Process, Service and Package information
 	FileInfo    os.FileInfo
@@ -54,6 +55,26 @@ func Init() {
 	DiscoverServices()
 }
 
+func (s *Service) IsRunning() bool {
+	if _, err := os.Stat(s.PidFilePath); err == nil {
+		bytes, _ := ioutil.ReadFile(s.PidFilePath)
+		pid, _ := strconv.Atoi(string(bytes))
+		proc, procErr := os.FindProcess(pid)
+		if procErr == nil {
+			sigError := proc.Signal(syscall.Signal(0))
+			if sigError == nil {
+				s.Process = proc
+				return true
+			} else {
+				os.Remove(s.PidFilePath)
+			}
+		}
+	} else {
+		os.Remove(s.PidFilePath)
+	}
+	return false
+}
+
 // DiscoverServices walks into the project path and looks in every subdirectory
 // for the service.yml file. For every service it registers it after trying
 // to import the package using Go's build.Import package
@@ -61,10 +82,11 @@ func DiscoverServices() {
 	buildPath := strings.Replace(ProjectPath, os.Getenv("GOPATH")+"/src/", "", 1)
 	fd, _ := ioutil.ReadDir(ProjectPath)
 	for _, item := range fd {
-		if item.IsDir() && !strings.HasPrefix(item.Name(), ".") {
-			if _, err := os.Stat(fmt.Sprintf("%s/%s/service.yml", ProjectPath, item.Name())); err == nil {
+		serviceName := item.Name()
+		if item.IsDir() && !strings.HasPrefix(serviceName, ".") {
+			if _, err := os.Stat(fmt.Sprintf("%s/%s/service.yml", ProjectPath, serviceName)); err == nil {
 				// Check for service.yml and try to import the package
-				pkg, err := build.Import(fmt.Sprintf("%s/%s", buildPath, item.Name()), "srcDir", 0)
+				pkg, err := build.Import(fmt.Sprintf("%s/%s", buildPath, serviceName), "srcDir", 0)
 				if err != nil {
 					log.Errorf("Error registering %s", item.Name())
 					log.Error(err.Error())
@@ -77,37 +99,28 @@ func DiscoverServices() {
 					FileInfo:      item,
 					PackageInfo:   pkg,
 					OrchestraPath: OrchestraServicePath,
-					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, item.Name()),
-					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, item.Name()),
+					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, serviceName),
+					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, serviceName),
 					Color:         colors[len(Registry)%len(colors)],
-					Path:          fmt.Sprintf("%s/%s", ProjectPath, item.Name()),
+					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName),
 				}
 
 				// Because I like nice logging
-				if len(service.Name) > MaxServiceNameLength {
-					MaxServiceNameLength = len(service.Name)
+				if len(serviceName) > MaxServiceNameLength {
+					MaxServiceNameLength = len(serviceName)
+				}
+
+				if binPath := os.Getenv("GOBIN"); binPath != "" {
+					service.BinPath = fmt.Sprintf("%s/%s", binPath, serviceName)
+				} else {
+					service.BinPath = fmt.Sprintf("%s/bin/%s", os.Getenv("GOPATH"), serviceName)
 				}
 
 				// Add the service to the registry
-				Registry[item.Name()] = service
-				if _, err := os.Stat(service.PidFilePath); err == nil {
-					bytes, _ := ioutil.ReadFile(service.PidFilePath)
-					pid, _ := strconv.Atoi(string(bytes))
-
-					// When registering, we take care, on every run, to check
-					// if the process is still alive.
-					proc, procErr := os.FindProcess(pid)
-					if procErr == nil {
-						sigError := proc.Signal(syscall.Signal(0))
-						if sigError == nil {
-							service.Process = proc
-						} else {
-							os.Remove(service.PidFilePath)
-						}
-					} else {
-						os.Remove(service.PidFilePath)
-					}
-				}
+				Registry[serviceName] = service
+				// When registering, we take care, on every run, to check
+				// if the process is still alive.
+				service.IsRunning()
 			}
 		}
 	}
