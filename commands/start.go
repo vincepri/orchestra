@@ -51,7 +51,7 @@ func StartAction(c *cli.Context) {
 			terminal.Stdout.Colorf("%s%s| @{c} %salready running\n", service.Name, spacing)
 		}
 	}
-	if c.Bool("attach") || c.Bool("log") {
+	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
 }

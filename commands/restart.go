@@ -48,7 +48,7 @@ func RestartAction(c *cli.Context) {
 		}
 		terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
 	}
-	if c.Bool("attach") || c.Bool("log") {
+	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
 }
