@@ -28,10 +28,13 @@ You should have an `orchestra.yml` file in your root directory and a `service.ym
 
 You can specify a custom configuration file using the `--config` flag or setting the `ORCHESTRA_CONFIG` env variable.
 
+By default orchestra will build your binaries inside your `GOPATH/bin` directory. To use a local directory you can set `localbuild: true` in your main configuration file.
+
 ## Example
 ```yaml
+localbuild: false
 env:
-	- "ABC=somethingGlobal"
+	ABC: "somethingGlobal"
 before:
 	- "echo I am a global command before"
 after:
