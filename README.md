@@ -32,7 +32,6 @@ By default orchestra will use `go install` to install your binaries in `GOPATH/b
 
 ## Example
 ```yaml
-gorun: false
 env:
 	ABC: "somethingGlobal"
 before:
