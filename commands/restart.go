@@ -56,7 +56,7 @@ func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 		return
 	}
 
-	var rebuitStatus string
+	var rebuiltStatus string
 	if rebuilt {
 		rebuiltStatus = "rebuilt & "
 	}
