@@ -16,7 +16,11 @@ var RestartCommand = &cli.Command{
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:  "attach, a",
-			Usage: "Attach logs right after starting",
+			Usage: "Attach to services output after start",
+		},
+		cli.BoolFlag{
+			Name:  "logs, l",
+			Usage: "Start logging after start",
 		},
 	},
 }
@@ -32,16 +36,19 @@ func RestartAction(c *cli.Context) {
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}
-		err = startService(c, service)
+		rebuilt, err := buildAndStart(c, service)
 		if err != nil {
 			appendError(err)
 			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
 			continue
 		}
-
-		terminal.Stdout.Colorf("%s%s| @{c} restarted\n", service.Name, spacing)
+		var rebuiltStatus string
+		if rebuilt {
+			rebuiltStatus = "rebuilt & "
+		}
+		terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
 	}
-	if c.Bool("attach") {
+	if c.Bool("attach") || c.Bool("log") {
 		LogsAction(c)
 	}
 }
