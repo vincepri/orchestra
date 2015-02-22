@@ -28,7 +28,7 @@ You should have an `orchestra.yml` file in your root directory and a `service.ym
 
 You can specify a custom configuration file using the `--config` flag or setting the `ORCHESTRA_CONFIG` env variable.
 
-By default orchestra will use `go install` to install your binaries in `GOPATH/bin`. To use `go run main.go` in the service directory you can set `gorun: true` in your main configuration file. Or you can use `goget: true` to run `go get ./...` for every service.
+By default orchestra will use `go install` to install your binaries in `GOPATH/bin`.
 
 ## Example
 ```yaml
