@@ -97,3 +97,8 @@ Orchestra supports bash autocomplete.
 ```sh
 source $GOPATH/src/github.com/vinceprignano/orchestra/autocomplete/orchestra
 ```
+
+Licensing
+---------
+Orchestra is licensed under the Apache License, Version 2.0.
+
