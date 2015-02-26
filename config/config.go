@@ -54,7 +54,7 @@ func ParseGlobalConfig() {
 
 	globalEnvs = os.Environ()
 	for k, v := range orchestra.Env {
-		globalEnvs = append(globalEnvs, fmt.Sprintf("%s=%s", k, v))
+		globalEnvs = append([]string{fmt.Sprintf("%s=%s", k, v)}, globalEnvs...)
 	}
 }
 
