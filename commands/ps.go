@@ -1,6 +1,11 @@
 package commands
 
 import (
+	"bytes"
+	"fmt"
+	"io"
+	"os/exec"
+	"regexp"
 	"strings"
 
 	"github.com/codegangsta/cli"
@@ -19,9 +24,31 @@ func PsAction(c *cli.Context) {
 	for name, service := range FilterServices(c) {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process != nil {
-			terminal.Stdout.Colorf("@{g}%s", name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d\n", service.Process.Pid)
+			terminal.Stdout.Colorf("@{g}%s", name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d  %s\n", service.Process.Pid, getPorts(service))
 		} else {
 			terminal.Stdout.Colorf("@{r}%s", name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
 		}
 	}
+}
+
+func getPorts(service *services.Service) string {
+	re := regexp.MustCompile("LISTEN")
+	cmd := exec.Command("lsof", "-p", fmt.Sprintf("%d", service.Process.Pid))
+	output := bytes.NewBuffer([]byte{})
+	cmd.Stdout = output
+	cmd.Stderr = output
+	cmd.Run()
+	lsofOutput := ""
+	for {
+		s, err := output.ReadString('\n')
+		if err == io.EOF {
+			break
+		}
+		matched := re.MatchString(s)
+		if matched {
+			fields := strings.Fields(s)
+			lsofOutput += fmt.Sprintf("%s/%s ", fields[8], strings.ToLower(fields[7]))
+		}
+	}
+	return lsofOutput
 }
