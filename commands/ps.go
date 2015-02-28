@@ -37,7 +37,10 @@ func getPorts(service *services.Service) string {
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output
 	cmd.Stderr = output
-	cmd.Run()
+	err := cmd.Run()
+	if err != nil {
+		return ""
+	}
 	lsofOutput := ""
 	for {
 		s, err := output.ReadString('\n')
