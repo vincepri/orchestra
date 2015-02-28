@@ -65,7 +65,7 @@ Commands
 >
 > `-r` `--race` Run tests with race condition
 
-- **ps** Displays the status of every service, process id and the ports that a running service is listening on.
+- **ps** Displays the _status_ of every service, _process id_ and the _ports_ in use.
 
 A service name can be prefixed with `~` to run a command in exclusion mode.
 For example `orchestra start ~second-service` will start everything expect the second-service.
