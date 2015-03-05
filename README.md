@@ -33,12 +33,14 @@ By default orchestra will use `go install` to install your binaries in `GOPATH/b
 ## Example
 ```yaml
 env:
-	ABC: "somethingGlobal"
+    ABC: "somethingGlobal"
 before:
-	- "echo I am a global command before"
+    - "echo I am a global command before"
 after:
-	- "echo I am a global after"
+    - "echo I am a global after"
 ```
+
+
 
 Commands
 --------
@@ -79,16 +81,24 @@ For example, in `orchestra.yml` you can configure to `echo AFTER START` before r
 
 ```yaml
 env:
-	- "ABC=somethingGlobal"
+    ABC: "A global env variable"
 before:
-	- "echo I am a global command before"
+    - "echo I am a global command before"
 after:
-	- "echo I am a global after"
+    - "echo I am a global after"
 start:
-	env:
-    	- "ABC=somethingStart"
+    env:
+    	ABC: "Override in start"
     after:
     	- "echo AFTER START"
+```
+
+## Configuring services
+You can use your `service.yml` to override the environment variables in a specific service. Variables specified on a service will always have precedence over the global ones.
+
+```yaml
+env:
+    ABC: "Override in service"
 ```
 
 Autocomplete
