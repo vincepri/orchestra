@@ -10,6 +10,8 @@ import (
 
 	"go/build"
 
+	"gopkg.in/yaml.v1"
+
 	log "github.com/cihub/seelog"
 )
 
@@ -25,6 +27,16 @@ var (
 	MaxServiceNameLength int
 	colors               = []string{"g", "b", "c", "m", "y", "w"}
 )
+
+func init() {
+	Registry = make(map[string]*Service)
+}
+
+// Init initializes the OrchestraServicePath to the workingdir/.orchestra path
+// and starts the service discovery
+func Init() {
+	DiscoverServices()
+}
 
 // Service encapsulates all the information needed for a service
 type Service struct {
@@ -43,16 +55,7 @@ type Service struct {
 	FileInfo    os.FileInfo
 	PackageInfo *build.Package
 	Process     *os.Process
-}
-
-func init() {
-	Registry = make(map[string]*Service)
-}
-
-// Init initializes the OrchestraServicePath to the workingdir/.orchestra path
-// and starts the service discovery
-func Init() {
-	DiscoverServices()
+	Env         []string
 }
 
 func (s *Service) IsRunning() bool {
@@ -84,7 +87,8 @@ func DiscoverServices() {
 	for _, item := range fd {
 		serviceName := item.Name()
 		if item.IsDir() && !strings.HasPrefix(serviceName, ".") {
-			if _, err := os.Stat(fmt.Sprintf("%s/%s/service.yml", ProjectPath, serviceName)); err == nil {
+			serviceConfigPath := fmt.Sprintf("%s/%s/service.yml", ProjectPath, serviceName)
+			if _, err := os.Stat(serviceConfigPath); err == nil {
 				// Check for service.yml and try to import the package
 				pkg, err := build.Import(fmt.Sprintf("%s/%s", buildPath, serviceName), "srcDir", 0)
 				if err != nil {
@@ -103,6 +107,20 @@ func DiscoverServices() {
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, serviceName),
 					Color:         colors[len(Registry)%len(colors)],
 					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName),
+				}
+
+				// Parse env variable in configuration
+				var serviceConfig struct {
+					Env map[string]string `env,omitempty`
+				}
+				b, err := ioutil.ReadFile(serviceConfigPath)
+				if err != nil {
+					log.Criticalf(err.Error())
+					os.Exit(1)
+				}
+				yaml.Unmarshal(b, &serviceConfig)
+				for k, v := range serviceConfig.Env {
+					service.Env = append(service.Env, fmt.Sprintf("%s=%s", k, v))
 				}
 
 				// Because I like nice logging
