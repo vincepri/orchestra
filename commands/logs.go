@@ -6,9 +6,9 @@ import (
 	"sync"
 
 	"github.com/ActiveState/tail"
+	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
