@@ -24,6 +24,7 @@ func main() {
 	app.Email = ""
 	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{
+		*commands.ExportCommand,
 		*commands.StartCommand,
 		*commands.StopCommand,
 		*commands.LogsCommand,
