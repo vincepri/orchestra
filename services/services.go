@@ -82,7 +82,8 @@ func (s *Service) IsRunning() bool {
 // for the service.yml file. For every service it registers it after trying
 // to import the package using Go's build.Import package
 func DiscoverServices() {
-	buildPath := strings.Replace(ProjectPath, os.Getenv("GOPATH")+"/src/", "", 1)
+	gopath := strings.TrimRight(os.Getenv("GOPATH"), "/")
+	buildPath := strings.Replace(ProjectPath, gopath+"/src/", "", 1)
 	fd, _ := ioutil.ReadDir(ProjectPath)
 	for _, item := range fd {
 		serviceName := item.Name()
