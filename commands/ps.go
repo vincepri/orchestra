@@ -8,7 +8,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/b2aio/orchestra/services"
+	"github.com/mondough/orchestra/services"
 	"github.com/codegangsta/cli"
 	"github.com/wsxiaoys/terminal"
 )

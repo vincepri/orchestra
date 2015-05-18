@@ -6,9 +6,9 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/b2aio/orchestra/commands"
-	"github.com/b2aio/orchestra/config"
-	"github.com/b2aio/orchestra/services"
+	"github.com/mondough/orchestra/commands"
+	"github.com/mondough/orchestra/config"
+	"github.com/mondough/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
 )
