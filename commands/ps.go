@@ -8,8 +8,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mondough/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
