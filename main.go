@@ -33,6 +33,7 @@ func main() {
 		*commands.RestartCommand,
 		*commands.PsCommand,
 		*commands.TestCommand,
+		*commands.BuildCommand,
 	}
 	app.Flags = []cli.Flag{
 		cli.StringFlag{

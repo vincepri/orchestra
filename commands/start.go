@@ -57,7 +57,7 @@ func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 		} else {
 			var rebuiltStatus string
 			if rebuilt {
-				rebuiltStatus = "rebuilt & "
+				rebuiltStatus = "(re)built and "
 			}
 			terminal.Stdout.Colorf("%s%s| @{g} %sstarted\n", service.Name, spacing, rebuiltStatus)
 		}
@@ -73,7 +73,7 @@ func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 	cmd := exec.Command(service.BinPath)
 
-	rebuilt, err := buildService(service)
+	rebuilt, err := installService(service)
 	if err != nil {
 		return rebuilt, err
 	}
@@ -107,8 +107,8 @@ func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 	return rebuilt, nil
 }
 
-// buildService runs go install in the service directory
-func buildService(service *services.Service) (bool, error) {
+// installService runs go install in the service directory
+func installService(service *services.Service) (bool, error) {
 	cmd := exec.Command("go", "install", "-v")
 	cmd.Dir = service.Path
 	output := bytes.NewBuffer([]byte{})
