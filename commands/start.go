@@ -11,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mondough/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -47,6 +47,7 @@ func StartAction(c *cli.Context) {
 }
 
 func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+	defer wg.Done()
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 	if service.Process == nil {
 		rebuilt, err := buildAndStart(c, service)
@@ -63,7 +64,6 @@ func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 	} else {
 		terminal.Stdout.Colorf("%s%s| @{c} already running\n", service.Name, spacing)
 	}
-	wg.Done()
 }
 
 // startService takes a Service struct as input, creates a new log file in .orchestra,
