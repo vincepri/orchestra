@@ -4,8 +4,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/mondough/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -40,6 +40,7 @@ func RestartAction(c *cli.Context) {
 }
 
 func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+	defer wg.Done()
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 
 	err := killService(service)
@@ -62,6 +63,4 @@ func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 	}
 
 	terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
-
-	wg.Done()
 }
