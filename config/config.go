@@ -37,6 +37,11 @@ type Config struct {
 	Ps      ContextConfig `ps,omitempty`
 	Logs    ContextConfig `logs,omitempty`
 	Test    ContextConfig `test,omitempty`
+	Export  ContextConfig `export,omitempty`
+}
+
+func GetBaseEnvVars() map[string]string {
+	return orchestra.Env
 }
 
 func UseGoRun() bool {

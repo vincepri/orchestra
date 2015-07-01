@@ -6,11 +6,11 @@ import (
 	"path"
 	"path/filepath"
 
+	"github.com/b2aio/orchestra/commands"
+	"github.com/b2aio/orchestra/config"
+	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/commands"
-	"github.com/vinceprignano/orchestra/config"
-	"github.com/vinceprignano/orchestra/services"
 )
 
 var app *cli.App
@@ -24,6 +24,7 @@ func main() {
 	app.Email = ""
 	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{
+		*commands.ExportCommand,
 		*commands.StartCommand,
 		*commands.StopCommand,
 		*commands.LogsCommand,

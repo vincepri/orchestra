@@ -6,10 +6,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/b2aio/orchestra/config"
+	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
-	"github.com/vinceprignano/orchestra/config"
-	"github.com/vinceprignano/orchestra/services"
 )
 
 // This is temporary, very very alpha and may change soon
