@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
@@ -35,19 +35,21 @@ var StartCommand = &cli.Command{
 
 // StartAction starts all the services (or the specified ones)
 func StartAction(c *cli.Context) {
-	wg := &sync.WaitGroup{}
-	for _, service := range FilterServices(c) {
-		wg.Add(1)
-		go start(wg, c, service)
+	worker := func(service *services.Service) func() {
+		return func() { start(c, service) }
 	}
-	wg.Wait()
+
+	pool := make(workerPool, runtime.NumCPU())
+	for _, service := range FilterServices(c) {
+		pool.Do(worker(service))
+	}
+	pool.Drain()
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
 }
 
-func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
-	defer wg.Done()
+func start(c *cli.Context, service *services.Service) {
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 	if service.Process == nil {
 		rebuilt, err := buildAndStart(c, service)
@@ -109,7 +111,7 @@ func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 
 // installService runs go install in the service directory
 func installService(service *services.Service) (bool, error) {
-	cmd := exec.Command("go", "install", "-v")
+	cmd := exec.Command("nice", "-n", niceness, "go", "install", "-v")
 	cmd.Dir = service.Path
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output

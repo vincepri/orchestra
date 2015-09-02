@@ -56,7 +56,8 @@ func testService(c *cli.Context, service *services.Service) (bool, error) {
 		cmdArgs = append(cmdArgs, "--race")
 	}
 	cmdArgs = append(cmdArgs, "./...")
-	cmd := exec.Command("go", cmdArgs...)
+	cmdArgs = append([]string{"-n", niceness, "go"}, cmdArgs...)
+	cmd := exec.Command("nice", cmdArgs...)
 	cmd.Dir = service.Path
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
