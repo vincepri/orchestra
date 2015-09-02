@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"os/exec"
+	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/wsxiaoys/terminal"
@@ -21,19 +21,23 @@ var BuildCommand = &cli.Command{
 }
 
 func BuildAction(c *cli.Context) {
-	wg := &sync.WaitGroup{}
-	for _, service := range FilterServices(c) {
-		wg.Add(1)
-		go buildService(wg, c, service)
+	worker := func(service *services.Service) func() {
+		return func() {
+			buildService(c, service)
+		}
 	}
-	wg.Wait()
+
+	pool := make(workerPool, runtime.NumCPU())
+	for _, service := range FilterServices(c) {
+		pool.Do(worker(service))
+	}
+	pool.Drain()
 }
 
-func buildService(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
-	defer wg.Done()
+func buildService(c *cli.Context, service *services.Service) {
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 
-	cmd := exec.Command("go", "build", "-v")
+	cmd := exec.Command("nice", "-n", niceness, "go", "build", "-v")
 	cmd.Dir = service.Path
 	output := new(bytes.Buffer)
 	cmd.Stdout = output

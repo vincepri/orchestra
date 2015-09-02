@@ -1,8 +1,8 @@
 package commands
 
 import (
+	"runtime"
 	"strings"
-	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/mondough/orchestra/services"
@@ -28,19 +28,24 @@ var RestartCommand = &cli.Command{
 
 // RestartAction restarts all the services (or the specified ones)
 func RestartAction(c *cli.Context) {
-	wg := &sync.WaitGroup{}
-	for _, service := range FilterServices(c) {
-		wg.Add(1)
-		go restart(wg, c, service)
+	worker := func(service *services.Service) func() {
+		return func() {
+			restart(c, service)
+		}
 	}
-	wg.Wait()
+
+	pool := make(workerPool, runtime.NumCPU())
+	for _, service := range FilterServices(c) {
+		pool.Do(worker(service))
+	}
+	pool.Drain()
+
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
 }
 
-func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
-	defer wg.Done()
+func restart(c *cli.Context, service *services.Service) {
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 
 	err := killService(service)
