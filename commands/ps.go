@@ -33,7 +33,7 @@ func PsAction(c *cli.Context) {
 
 func getPorts(service *services.Service) string {
 	re := regexp.MustCompile("LISTEN")
-	cmd := exec.Command("lsof", "-p", fmt.Sprintf("%d", service.Process.Pid))
+	cmd := exec.Command("lsof", "-P", "-p", fmt.Sprintf("%d", service.Process.Pid))
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output
 	cmd.Stderr = output
