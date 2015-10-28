@@ -27,8 +27,8 @@ func PsAction(c *cli.Context) {
 	var wg sync.WaitGroup
 	for _, svc := range svcs {
 		wg.Add(1)
-		go func(svc *services.Service) {
-			svc.Ports = getPorts(svc)
+		go func(s *services.Service) {
+			s.Ports = getPorts(s)
 			wg.Done()
 		}(svc)
 	}
@@ -45,6 +45,10 @@ func PsAction(c *cli.Context) {
 }
 
 func getPorts(service *services.Service) string {
+	if service.Process == nil {
+		return ""
+	}
+
 	re := regexp.MustCompile("LISTEN")
 	cmd := exec.Command("lsof", "-P", "-p", fmt.Sprintf("%d", service.Process.Pid))
 	output := bytes.NewBuffer([]byte{})
