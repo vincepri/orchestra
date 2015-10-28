@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/mondough/orchestra/services"
@@ -22,10 +23,21 @@ var PsCommand = &cli.Command{
 // PsAction checks the status for every service and output
 func PsAction(c *cli.Context) {
 	svcs := services.Sort(FilterServices(c))
+
+	var wg sync.WaitGroup
+	for _, svc := range svcs {
+		wg.Add(1)
+		go func(svc *services.Service) {
+			svc.Ports = getPorts(svc)
+			wg.Done()
+		}(svc)
+	}
+	wg.Wait()
+
 	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process != nil {
-			terminal.Stdout.Colorf("@{g}%s", service.Name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d  %s\n", service.Process.Pid, getPorts(service))
+			terminal.Stdout.Colorf("@{g}%s", service.Name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d  %s\n", service.Process.Pid, service.Ports)
 		} else {
 			terminal.Stdout.Colorf("@{r}%s", service.Name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
 		}

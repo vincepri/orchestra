@@ -80,6 +80,7 @@ type Service struct {
 	PackageInfo *build.Package
 	Process     *os.Process
 	Env         []string
+	Ports       string
 }
 
 func (s *Service) IsRunning() bool {
