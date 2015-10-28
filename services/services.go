@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -38,6 +39,29 @@ func Init() {
 	DiscoverServices()
 }
 
+func Sort(r map[string]*Service) SortableRegistry {
+	sr := make(SortableRegistry, 0)
+	for _, v := range r {
+		sr = append(sr, v)
+	}
+	sort.Sort(sr)
+	return sr
+}
+
+type SortableRegistry []*Service
+
+func (s SortableRegistry) Len() int {
+	return len(s)
+}
+
+func (s SortableRegistry) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s SortableRegistry) Less(i, j int) bool {
+	return s[i].Name < s[j].Name
+}
+
 // Service encapsulates all the information needed for a service
 type Service struct {
 	Name        string
@@ -56,6 +80,7 @@ type Service struct {
 	PackageInfo *build.Package
 	Process     *os.Process
 	Env         []string
+	Ports       string
 }
 
 func (s *Service) IsRunning() bool {

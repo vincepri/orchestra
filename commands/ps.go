@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/codegangsta/cli"
 	"github.com/mondough/orchestra/services"
@@ -21,19 +22,31 @@ var PsCommand = &cli.Command{
 
 // PsAction checks the status for every service and output
 func PsAction(c *cli.Context) {
-	for name, service := range FilterServices(c) {
+	svcs := services.Sort(FilterServices(c))
+
+	var wg sync.WaitGroup
+	for _, svc := range svcs {
+		wg.Add(1)
+		go func(svc *services.Service) {
+			svc.Ports = getPorts(svc)
+			wg.Done()
+		}(svc)
+	}
+	wg.Wait()
+
+	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		if service.Process != nil {
-			terminal.Stdout.Colorf("@{g}%s", name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d  %s\n", service.Process.Pid, getPorts(service))
+			terminal.Stdout.Colorf("@{g}%s", service.Name).Reset().Colorf("%s|", spacing).Print(" running ").Colorf("  %d  %s\n", service.Process.Pid, service.Ports)
 		} else {
-			terminal.Stdout.Colorf("@{r}%s", name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
+			terminal.Stdout.Colorf("@{r}%s", service.Name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
 		}
 	}
 }
 
 func getPorts(service *services.Service) string {
 	re := regexp.MustCompile("LISTEN")
-	cmd := exec.Command("lsof", "-p", fmt.Sprintf("%d", service.Process.Pid))
+	cmd := exec.Command("lsof", "-P", "-p", fmt.Sprintf("%d", service.Process.Pid))
 	output := bytes.NewBuffer([]byte{})
 	cmd.Stdout = output
 	cmd.Stderr = output
