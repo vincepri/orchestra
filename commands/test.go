@@ -28,7 +28,8 @@ var TestCommand = &cli.Command{
 
 // StartAction starts all the services (or the specified ones)
 func TestAction(c *cli.Context) {
-	for _, service := range FilterServices(c) {
+	svcs := services.Sort(FilterServices(c))
+	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		success, err := testService(c, service)
 		if err != nil {
