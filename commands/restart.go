@@ -35,7 +35,8 @@ func RestartAction(c *cli.Context) {
 	}
 
 	pool := make(workerPool, runtime.NumCPU())
-	for _, service := range FilterServices(c) {
+	svcs := services.Sort(FilterServices(c))
+	for _, service := range svcs {
 		pool.Do(worker(service))
 	}
 	pool.Drain()
