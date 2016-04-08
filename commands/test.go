@@ -6,8 +6,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/b2aio/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -28,7 +28,8 @@ var TestCommand = &cli.Command{
 
 // StartAction starts all the services (or the specified ones)
 func TestAction(c *cli.Context) {
-	for _, service := range FilterServices(c) {
+	svcs := services.Sort(FilterServices(c))
+	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 		success, err := testService(c, service)
 		if err != nil {
@@ -56,7 +57,8 @@ func testService(c *cli.Context, service *services.Service) (bool, error) {
 		cmdArgs = append(cmdArgs, "--race")
 	}
 	cmdArgs = append(cmdArgs, "./...")
-	cmd := exec.Command("go", cmdArgs...)
+	cmdArgs = append([]string{"-n", niceness, "go"}, cmdArgs...)
+	cmd := exec.Command("nice", cmdArgs...)
 	cmd.Dir = service.Path
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

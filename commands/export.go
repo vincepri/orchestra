@@ -3,8 +3,8 @@ package commands
 import (
 	"fmt"
 
-	"github.com/b2aio/orchestra/config"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/config"
 	"github.com/wsxiaoys/terminal"
 )
 

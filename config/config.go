@@ -38,6 +38,7 @@ type Config struct {
 	Logs    ContextConfig `logs,omitempty`
 	Test    ContextConfig `test,omitempty`
 	Export  ContextConfig `export,omitempty`
+	Build   ContextConfig `build,omitempty`
 }
 
 func GetBaseEnvVars() map[string]string {

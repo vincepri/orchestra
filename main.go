@@ -6,14 +6,16 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/b2aio/orchestra/commands"
-	"github.com/b2aio/orchestra/config"
-	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/commands"
+	"github.com/mondough/orchestra/config"
+	"github.com/mondough/orchestra/services"
 )
 
 var app *cli.App
+
+const defaultConfigFile = "orchestra.yml"
 
 func main() {
 	defer log.Flush()
@@ -31,6 +33,7 @@ func main() {
 		*commands.RestartCommand,
 		*commands.PsCommand,
 		*commands.TestCommand,
+		*commands.BuildCommand,
 	}
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -43,7 +46,12 @@ func main() {
 	// init checks for an existing orchestra.yml in the current working directory
 	// and creates a new .orchestra directory (if doesn't exist)
 	app.Before = func(c *cli.Context) error {
-		config.ConfigPath, _ = filepath.Abs(c.GlobalString("config"))
+		confVal := c.GlobalString("config")
+		if confVal == "" {
+			confVal = defaultConfigFile
+		}
+
+		config.ConfigPath, _ = filepath.Abs(confVal)
 		if _, err := os.Stat(config.ConfigPath); os.IsNotExist(err) {
 			fmt.Printf("No %s found. Have you specified the right directory?\n", c.GlobalString("config"))
 			os.Exit(1)
