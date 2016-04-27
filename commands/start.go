@@ -1,7 +1,6 @@
 package commands
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
@@ -55,7 +54,7 @@ func start(c *cli.Context, service *services.Service) {
 		rebuilt, err := buildAndStart(c, service)
 		if err != nil {
 			appendError(err)
-			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
+			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%v\n", service.Name, spacing, err)
 		} else {
 			var rebuiltStatus string
 			if rebuilt {
@@ -107,24 +106,4 @@ func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 		return rebuilt, fmt.Errorf("Service %s exited after %s", cmd.ProcessState.UserTime().String())
 	}
 	return rebuilt, nil
-}
-
-// installService runs go install in the service directory
-func installService(service *services.Service) (bool, error) {
-	cmd := exec.Command("nice", "-n", niceness, "go", "install", "-v")
-	cmd.Dir = service.Path
-	output := bytes.NewBuffer([]byte{})
-	cmd.Stdout = output
-	cmd.Stderr = output
-	err := cmd.Start()
-	if err != nil {
-		return false, err
-	}
-	cmd.Wait()
-	if !cmd.ProcessState.Success() {
-		return false, fmt.Errorf("Failed to install service %s\n%s", service.Name, output.String())
-	} else if output.Len() > 0 {
-		return true, nil
-	}
-	return false, nil
 }

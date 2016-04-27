@@ -107,8 +107,7 @@ func DiscoverServices() {
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, serviceName),
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, serviceName),
 					Color:         colors[len(Registry)%len(colors)],
-					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName),
-				}
+					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName)}
 
 				// Parse env variable in configuration
 				var serviceConfig struct {
