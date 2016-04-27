@@ -22,18 +22,17 @@ func main() {
 	app = cli.NewApp()
 	app.Name = "Orchestra"
 	app.Usage = "Orchestrate Go Services"
-	app.Author = "Vincenzo Prignano"
-	app.Email = ""
 	app.EnableBashCompletion = true
 	app.Commands = []cli.Command{
+		*commands.BuildCommand,
 		*commands.ExportCommand,
+		*commands.InstallCommand,
+		*commands.LogsCommand,
+		*commands.PsCommand,
+		*commands.RestartCommand,
 		*commands.StartCommand,
 		*commands.StopCommand,
-		*commands.LogsCommand,
-		*commands.RestartCommand,
-		*commands.PsCommand,
 		*commands.TestCommand,
-		*commands.BuildCommand,
 	}
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
