@@ -17,7 +17,7 @@ var StopCommand = &cli.Command{
 }
 
 // StopAction stops all the services (or the specified ones)
-func StopAction(c *cli.Context) {
+func StopAction(c *cli.Context) error {
 	svcs := services.Sort(FilterServices(c))
 	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
@@ -29,6 +29,7 @@ func StopAction(c *cli.Context) {
 			terminal.Stdout.Colorf("%s%s| @{r} stopped\n", service.Name, spacing)
 		}
 	}
+	return nil
 }
 
 func killService(service *services.Service) error {

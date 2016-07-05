@@ -19,7 +19,7 @@ var InstallCommand = &cli.Command{
 	BashComplete: ServicesBashComplete}
 
 // InstallAction installs all the services (or the specified ones)
-func InstallAction(c *cli.Context) {
+func InstallAction(c *cli.Context) error {
 	worker := func(service *services.Service) func() {
 		return func() {
 			spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
@@ -40,6 +40,7 @@ func InstallAction(c *cli.Context) {
 		pool.Do(worker(service))
 	}
 	pool.Drain()
+	return nil
 }
 
 // installService runs go install in the service directory

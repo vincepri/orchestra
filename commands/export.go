@@ -15,8 +15,9 @@ var ExportCommand = &cli.Command{
 	BashComplete: ServicesBashComplete,
 }
 
-func ExportAction(c *cli.Context) {
+func ExportAction(c *cli.Context) error {
 	for key, value := range config.GetBaseEnvVars() {
 		terminal.Stdout.Print(fmt.Sprintf("export %s=%s\n", key, value))
 	}
+	return nil
 }

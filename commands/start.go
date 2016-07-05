@@ -33,7 +33,7 @@ var StartCommand = &cli.Command{
 }
 
 // StartAction starts all the services (or the specified ones)
-func StartAction(c *cli.Context) {
+func StartAction(c *cli.Context) error {
 	worker := func(service *services.Service) func() {
 		return func() { start(c, service) }
 	}
@@ -47,6 +47,7 @@ func StartAction(c *cli.Context) {
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+	return nil
 }
 
 func start(c *cli.Context, service *services.Service) {

@@ -27,7 +27,7 @@ var TestCommand = &cli.Command{
 }
 
 // StartAction starts all the services (or the specified ones)
-func TestAction(c *cli.Context) {
+func TestAction(c *cli.Context) error {
 	svcs := services.Sort(FilterServices(c))
 	for _, service := range svcs {
 		spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
@@ -42,6 +42,7 @@ func TestAction(c *cli.Context) {
 			terminal.Stdout.Colorf("%s%s| @{g} PASS\n", service.Name, spacing)
 		}
 	}
+	return nil
 }
 
 // startService takes a Service struct as input, creates a new log file in .orchestra,

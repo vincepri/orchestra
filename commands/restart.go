@@ -27,7 +27,7 @@ var RestartCommand = &cli.Command{
 }
 
 // RestartAction restarts all the services (or the specified ones)
-func RestartAction(c *cli.Context) {
+func RestartAction(c *cli.Context) error {
 	worker := func(service *services.Service) func() {
 		return func() {
 			restart(c, service)
@@ -44,6 +44,7 @@ func RestartAction(c *cli.Context) {
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+	return nil
 }
 
 func restart(c *cli.Context, service *services.Service) {

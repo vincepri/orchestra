@@ -20,7 +20,7 @@ var BuildCommand = &cli.Command{
 	BashComplete: ServicesBashComplete,
 }
 
-func BuildAction(c *cli.Context) {
+func BuildAction(c *cli.Context) error {
 	worker := func(service *services.Service) func() {
 		return func() {
 			buildService(c, service)
@@ -33,6 +33,7 @@ func BuildAction(c *cli.Context) {
 		pool.Do(worker(service))
 	}
 	pool.Drain()
+	return nil
 }
 
 func buildService(c *cli.Context, service *services.Service) {

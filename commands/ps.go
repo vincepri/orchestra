@@ -21,7 +21,7 @@ var PsCommand = &cli.Command{
 }
 
 // PsAction checks the status for every service and output
-func PsAction(c *cli.Context) {
+func PsAction(c *cli.Context) error {
 	svcs := services.Sort(FilterServices(c))
 
 	var wg sync.WaitGroup
@@ -42,6 +42,7 @@ func PsAction(c *cli.Context) {
 			terminal.Stdout.Colorf("@{r}%s", service.Name).Reset().Colorf("%s|", spacing).Reset().Print(" aborted\n")
 		}
 	}
+	return nil
 }
 
 func getPorts(service *services.Service) string {

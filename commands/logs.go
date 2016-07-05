@@ -25,7 +25,7 @@ func init() {
 	logReceiver = make(chan string)
 }
 
-func LogsAction(c *cli.Context) {
+func LogsAction(c *cli.Context) error {
 	go ConsumeLogs()
 	wg := &sync.WaitGroup{}
 	for _, service := range FilterServices(c) {
@@ -34,6 +34,7 @@ func LogsAction(c *cli.Context) {
 	}
 	wg.Wait()
 	close(logReceiver)
+	return nil
 }
 
 func ConsumeLogs() {
