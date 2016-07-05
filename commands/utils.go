@@ -6,11 +6,15 @@ import (
 	"os"
 	"strings"
 
-	"github.com/b2aio/orchestra/config"
-	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/config"
+	"github.com/mondough/orchestra/services"
 )
+
+// niceness used for subprocesses
+// https://en.wikipedia.org/wiki/Nice_(Unix)
+const niceness = "1"
 
 // This is temporary, very very alpha and may change soon
 func FilterServices(c *cli.Context) map[string]*services.Service {
@@ -61,8 +65,8 @@ func ServicesBashComplete(c *cli.Context) {
 	}
 }
 
-func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
-	return func(c *cli.Context) {
+func BeforeAfterWrapper(f func(c *cli.Context) error) func(c *cli.Context) error {
+	return func(c *cli.Context) error {
 		err := config.GetBeforeFunc()(c)
 		if err != nil {
 			appendError(err)
@@ -72,6 +76,7 @@ func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
 		if err != nil {
 			appendError(err)
 		}
+		return nil
 	}
 }
 
@@ -79,4 +84,20 @@ func BeforeAfterWrapper(f func(c *cli.Context)) func(c *cli.Context) {
 // including the ones specified in the global config
 func GetEnvForService(c *cli.Context, service *services.Service) []string {
 	return append(service.Env, config.GetEnvForCommand(c)...)
+}
+
+type workerPool chan struct{}
+
+func (p workerPool) Drain() {
+	for i := 0; i < cap(p); i++ {
+		p <- struct{}{}
+	}
+}
+
+func (p workerPool) Do(impl func()) {
+	p <- struct{}{}
+	go func() {
+		defer func() { <-p }()
+		impl()
+	}()
 }

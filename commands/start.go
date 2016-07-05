@@ -1,18 +1,17 @@
 package commands
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 	"time"
 
-	"github.com/b2aio/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -34,36 +33,40 @@ var StartCommand = &cli.Command{
 }
 
 // StartAction starts all the services (or the specified ones)
-func StartAction(c *cli.Context) {
-	wg := &sync.WaitGroup{}
-	for _, service := range FilterServices(c) {
-		wg.Add(1)
-		go start(wg, c, service)
+func StartAction(c *cli.Context) error {
+	worker := func(service *services.Service) func() {
+		return func() { start(c, service) }
 	}
-	wg.Wait()
+
+	pool := make(workerPool, runtime.NumCPU())
+	svcs := services.Sort(FilterServices(c))
+	for _, service := range svcs {
+		pool.Do(worker(service))
+	}
+	pool.Drain()
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+	return nil
 }
 
-func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+func start(c *cli.Context, service *services.Service) {
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 	if service.Process == nil {
 		rebuilt, err := buildAndStart(c, service)
 		if err != nil {
 			appendError(err)
-			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%s\n", service.Name, spacing, err.Error())
+			terminal.Stdout.Colorf("%s%s| @{r} error: @{|}%v\n", service.Name, spacing, err)
 		} else {
 			var rebuiltStatus string
 			if rebuilt {
-				rebuiltStatus = "rebuilt & "
+				rebuiltStatus = "(re)built and "
 			}
 			terminal.Stdout.Colorf("%s%s| @{g} %sstarted\n", service.Name, spacing, rebuiltStatus)
 		}
 	} else {
 		terminal.Stdout.Colorf("%s%s| @{c} already running\n", service.Name, spacing)
 	}
-	wg.Done()
 }
 
 // startService takes a Service struct as input, creates a new log file in .orchestra,
@@ -73,7 +76,7 @@ func start(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 	cmd := exec.Command(service.BinPath)
 
-	rebuilt, err := buildService(service)
+	rebuilt, err := installService(service)
 	if err != nil {
 		return rebuilt, err
 	}
@@ -105,24 +108,4 @@ func buildAndStart(c *cli.Context, service *services.Service) (bool, error) {
 		return rebuilt, fmt.Errorf("Service %s exited after %s", cmd.ProcessState.UserTime().String())
 	}
 	return rebuilt, nil
-}
-
-// buildService runs go install in the service directory
-func buildService(service *services.Service) (bool, error) {
-	cmd := exec.Command("go", "install", "-v")
-	cmd.Dir = service.Path
-	output := bytes.NewBuffer([]byte{})
-	cmd.Stdout = output
-	cmd.Stderr = output
-	err := cmd.Start()
-	if err != nil {
-		return false, err
-	}
-	cmd.Wait()
-	if !cmd.ProcessState.Success() {
-		return false, fmt.Errorf("Failed to install service %s\n%s", service.Name, output.String())
-	} else if output.Len() > 0 {
-		return true, nil
-	}
-	return false, nil
 }

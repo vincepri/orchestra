@@ -31,13 +31,15 @@ type Config struct {
 	GoRun  bool              `gorun,omitempty`
 
 	// Configuration for Commands
+	Build   ContextConfig `build,omitempty`
+	Export  ContextConfig `export,omitempty`
+	Install ContextConfig `install,omitempty`
+	Logs    ContextConfig `logs,omitempty`
+	Ps      ContextConfig `ps,omitempty`
+	Restart ContextConfig `restart,omitempty`
 	Start   ContextConfig `start,omitempty`
 	Stop    ContextConfig `stop,omitempty`
-	Restart ContextConfig `restart,omitempty`
-	Ps      ContextConfig `ps,omitempty`
-	Logs    ContextConfig `logs,omitempty`
 	Test    ContextConfig `test,omitempty`
-	Export  ContextConfig `export,omitempty`
 }
 
 func GetBaseEnvVars() map[string]string {

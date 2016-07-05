@@ -1,11 +1,11 @@
 package commands
 
 import (
+	"runtime"
 	"strings"
-	"sync"
 
-	"github.com/b2aio/orchestra/services"
 	"github.com/codegangsta/cli"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -27,19 +27,27 @@ var RestartCommand = &cli.Command{
 }
 
 // RestartAction restarts all the services (or the specified ones)
-func RestartAction(c *cli.Context) {
-	wg := &sync.WaitGroup{}
-	for _, service := range FilterServices(c) {
-		wg.Add(1)
-		go restart(wg, c, service)
+func RestartAction(c *cli.Context) error {
+	worker := func(service *services.Service) func() {
+		return func() {
+			restart(c, service)
+		}
 	}
-	wg.Wait()
+
+	pool := make(workerPool, runtime.NumCPU())
+	svcs := services.Sort(FilterServices(c))
+	for _, service := range svcs {
+		pool.Do(worker(service))
+	}
+	pool.Drain()
+
 	if c.Bool("attach") || c.Bool("logs") {
 		LogsAction(c)
 	}
+	return nil
 }
 
-func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
+func restart(c *cli.Context, service *services.Service) {
 	spacing := strings.Repeat(" ", services.MaxServiceNameLength+2-len(service.Name))
 
 	err := killService(service)
@@ -62,6 +70,4 @@ func restart(wg *sync.WaitGroup, c *cli.Context, service *services.Service) {
 	}
 
 	terminal.Stdout.Colorf("%s%s| @{c} %srestarted\n", service.Name, spacing, rebuiltStatus)
-
-	wg.Done()
 }

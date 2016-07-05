@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -38,6 +39,29 @@ func Init() {
 	DiscoverServices()
 }
 
+func Sort(r map[string]*Service) SortableRegistry {
+	sr := make(SortableRegistry, 0)
+	for _, v := range r {
+		sr = append(sr, v)
+	}
+	sort.Sort(sr)
+	return sr
+}
+
+type SortableRegistry []*Service
+
+func (s SortableRegistry) Len() int {
+	return len(s)
+}
+
+func (s SortableRegistry) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s SortableRegistry) Less(i, j int) bool {
+	return s[i].Name < s[j].Name
+}
+
 // Service encapsulates all the information needed for a service
 type Service struct {
 	Name        string
@@ -56,6 +80,7 @@ type Service struct {
 	PackageInfo *build.Package
 	Process     *os.Process
 	Env         []string
+	Ports       string
 }
 
 func (s *Service) IsRunning() bool {
@@ -82,7 +107,8 @@ func (s *Service) IsRunning() bool {
 // for the service.yml file. For every service it registers it after trying
 // to import the package using Go's build.Import package
 func DiscoverServices() {
-	buildPath := strings.Replace(ProjectPath, os.Getenv("GOPATH")+"/src/", "", 1)
+	gopath := strings.TrimRight(os.Getenv("GOPATH"), "/")
+	buildPath := strings.Replace(ProjectPath, gopath+"/src/", "", 1)
 	fd, _ := ioutil.ReadDir(ProjectPath)
 	for _, item := range fd {
 		serviceName := item.Name()
@@ -106,8 +132,7 @@ func DiscoverServices() {
 					LogFilePath:   fmt.Sprintf("%s/%s.log", OrchestraServicePath, serviceName),
 					PidFilePath:   fmt.Sprintf("%s/%s.pid", OrchestraServicePath, serviceName),
 					Color:         colors[len(Registry)%len(colors)],
-					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName),
-				}
+					Path:          fmt.Sprintf("%s/%s", ProjectPath, serviceName)}
 
 				// Parse env variable in configuration
 				var serviceConfig struct {

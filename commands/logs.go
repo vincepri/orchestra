@@ -5,10 +5,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/ActiveState/tail"
-	"github.com/b2aio/orchestra/services"
 	log "github.com/cihub/seelog"
 	"github.com/codegangsta/cli"
+	"github.com/hpcloud/tail"
+	"github.com/mondough/orchestra/services"
 	"github.com/wsxiaoys/terminal"
 )
 
@@ -25,7 +25,7 @@ func init() {
 	logReceiver = make(chan string)
 }
 
-func LogsAction(c *cli.Context) {
+func LogsAction(c *cli.Context) error {
 	go ConsumeLogs()
 	wg := &sync.WaitGroup{}
 	for _, service := range FilterServices(c) {
@@ -34,6 +34,7 @@ func LogsAction(c *cli.Context) {
 	}
 	wg.Wait()
 	close(logReceiver)
+	return nil
 }
 
 func ConsumeLogs() {
@@ -43,6 +44,7 @@ func ConsumeLogs() {
 }
 
 func TailServiceLog(service *services.Service, wg *sync.WaitGroup) {
+	defer wg.Done()
 	spacingLength := services.MaxServiceNameLength + 2 - len(service.Name)
 	t, err := tail.TailFile(service.LogFilePath, tail.Config{Follow: true})
 	if err != nil {
@@ -51,5 +53,4 @@ func TailServiceLog(service *services.Service, wg *sync.WaitGroup) {
 	for line := range t.Lines {
 		logReceiver <- fmt.Sprintf("@{%s}%s@{|}%s|  %s\n", service.Color, service.Name, strings.Repeat(" ", spacingLength), line.Text)
 	}
-	wg.Done()
 }
